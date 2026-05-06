@@ -1,0 +1,498 @@
+/* =============================================
+   SISTEMA DE DEGRADACIÓN VISUAL — El Peaje
+   Nivel 0: limpio (Google/reCAPTCHA)
+   Nivel 4: terminal rota, negro/verde, scanlines
+   ============================================= */
+
+/* Transiciones en los elementos que cambian visualmente entre niveles */
+.card {
+  transition:
+    transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 1.2s ease,
+    border-color 1s ease,
+    background-color 1.4s ease,
+    border-radius 0.8s ease;
+}
+
+.btn-primary {
+  transition:
+    background-color 1s ease,
+    border-color 0.8s ease,
+    color 0.8s ease,
+    border-radius 0.8s ease,
+    letter-spacing 0.8s ease;
+}
+
+.input-field {
+  transition:
+    background-color 1.2s ease,
+    border-color 1s ease,
+    color 1s ease,
+    border-radius 0.8s ease;
+}
+
+.progress-bar-fill {
+  transition: width 0.4s ease, background-color 1s ease;
+}
+
+body {
+  transition: background-color 1.4s ease;
+}
+
+/* NIVEL 0 — Base limpia */
+[data-deg="0"] {
+  --color-primary: #4285f4;
+  --color-error: #d93025;
+  --bg: #f1f3f4;
+  --card-bg: #ffffff;
+  --border: #dadce0;
+}
+
+/* =============================================
+   NIVEL 1 — Primeras grietas
+   Monospace filtra en labels e inputs.
+   El borde de la card se vuelve más marcado.
+   ============================================= */
+[data-deg="1"] {
+  --color-primary: #3a6ecf;
+  --border: #aab;
+  --bg: #eef0f3;
+}
+
+[data-deg="1"] .card {
+  border: 1px solid #b0b8cc;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+[data-deg="1"] .input-field {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+[data-deg="1"] label,
+[data-deg="1"] .field-label {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+[data-deg="1"] .btn-primary {
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+
+/* =============================================
+   NIVEL 2 — El sistema empieza a fallar
+   Paleta se oscurece. Card rotada. Aparece
+   algo de verde sucio en los bordes.
+   ============================================= */
+[data-deg="2"] {
+  --color-primary: #1a8a4a;
+  --color-primary-dark: #0f6030;
+  --color-error: #cc2200;
+  --bg: #1a1f1a;
+  --card-bg: #1e2620;
+  --border: #2a5a2a;
+  --text-main: #c8e0c8;
+  --text-secondary: #6a9a6a;
+}
+
+[data-deg="2"] body,
+[data-deg="2"] {
+  color: var(--text-main);
+  background-color: #1a1f1a;
+}
+
+[data-deg="3"] body,
+[data-deg="3"] {
+  background-color: #080c08;
+}
+
+[data-deg="4"] body,
+[data-deg="4"] {
+  background-color: #000000;
+}
+
+[data-deg="2"] .card {
+  transform: rotate(-0.6deg);
+  border: 1px solid #2a5a2a !important;
+  box-shadow: 0 0 20px rgba(0, 180, 80, 0.08), 0 4px 20px rgba(0,0,0,0.5) !important;
+  background: var(--card-bg);
+}
+
+[data-deg="2"] .input-field {
+  font-family: var(--font-mono);
+  background: #0d120d;
+  color: #88cc88;
+  border-color: #2a5a2a;
+}
+
+[data-deg="2"] .btn-primary {
+  background-color: #1a8a4a !important;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  border: 1px solid #2aaa5a;
+}
+
+[data-deg="2"] .field-label {
+  color: #6a9a6a;
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+[data-deg="2"] h1, [data-deg="2"] h2,
+[data-deg="2"] p, [data-deg="2"] span {
+  color: #c8e0c8;
+}
+
+[data-deg="2"] .progress-bar-fill {
+  background-color: #1a8a4a !important;
+}
+
+[data-deg="2"] .error-message {
+  background: #1a0a00 !important;
+  border-color: #cc2200 !important;
+  color: #ff4422 !important;
+  font-family: var(--font-mono);
+}
+
+/* =============================================
+   NIVEL 3 — Terminal corrupta
+   Negro profundo, verde fosforescente, scanlines,
+   glow, sin border-radius, todo monospace.
+   ============================================= */
+[data-deg="3"] {
+  --color-primary: #00cc44;
+  --color-primary-dark: #009933;
+  --color-error: #ff3300;
+  --bg: #080c08;
+  --card-bg: #0a0f0a;
+  --border: #00aa33;
+  --text-main: #00dd55;
+  --text-secondary: #008833;
+}
+
+[data-deg="3"],
+[data-deg="3"] * {
+  font-family: var(--font-mono) !important;
+}
+
+[data-deg="3"] body {
+  background: #080c08;
+}
+
+[data-deg="3"] .card {
+  border-radius: 0 !important;
+  border: 1px solid #00aa33 !important;
+  transform: rotate(-0.9deg);
+  box-shadow:
+    0 0 8px rgba(0, 200, 70, 0.3),
+    0 0 30px rgba(0, 200, 70, 0.1),
+    inset 0 0 60px rgba(0, 0, 0, 0.4) !important;
+  background: var(--card-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scanlines */
+[data-deg="3"] .card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.3) 2px,
+    rgba(0, 0, 0, 0.3) 3px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+[data-deg="3"] .btn-primary {
+  border-radius: 0 !important;
+  background-color: #001a00 !important;
+  border: 1px solid #00cc44 !important;
+  color: #00cc44 !important;
+  font-family: var(--font-mono) !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 0 8px rgba(0, 200, 70, 0.3);
+}
+
+[data-deg="3"] .btn-primary::before {
+  content: "> ";
+  color: #00cc44;
+}
+
+[data-deg="3"] .input-field {
+  border-radius: 0 !important;
+  border: 1px solid #00aa33 !important;
+  background: #000800 !important;
+  color: #00dd55 !important;
+  caret-color: #00ff44;
+  box-shadow: inset 0 0 8px rgba(0, 180, 60, 0.1);
+}
+
+[data-deg="3"] .input-field::placeholder {
+  color: #004422;
+}
+
+[data-deg="3"] .field-label {
+  color: #008833;
+  font-size: 0.78em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+[data-deg="3"] .field-label::before {
+  content: "// ";
+  color: #005522;
+}
+
+[data-deg="3"] h1, [data-deg="3"] h2 {
+  color: #00ff55;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 8px rgba(0, 255, 85, 0.5);
+}
+
+[data-deg="3"] p, [data-deg="3"] span, [data-deg="3"] label {
+  color: #00bb44;
+}
+
+[data-deg="3"] .error-message {
+  color: #ff3300 !important;
+  background: #1a0000 !important;
+  border-color: #ff3300 !important;
+  text-shadow: 0 0 6px rgba(255, 50, 0, 0.6);
+  animation: blink 1.2s step-end infinite;
+}
+
+[data-deg="3"] .progress-bar-fill {
+  background-color: #00cc44 !important;
+  box-shadow: 0 0 6px rgba(0, 200, 70, 0.6);
+}
+
+/* =============================================
+   NIVEL 4 — COLAPSO TOTAL
+   Terminal destruida. Glitch. Noise. Shake.
+   El sistema ya no existe como interfaz.
+   ============================================= */
+[data-deg="4"] {
+  --color-primary: #00ff41;
+  --color-primary-dark: #00cc33;
+  --color-error: #ff0000;
+  --bg: #000000;
+  --card-bg: #020302;
+  --border: #00ff41;
+  --text-main: #00ff41;
+  --text-secondary: #009922;
+}
+
+[data-deg="4"],
+[data-deg="4"] * {
+  font-family: var(--font-mono) !important;
+}
+
+[data-deg="4"] .card {
+  border-radius: 0 !important;
+  border: 1px solid #00ff41 !important;
+  transform: rotate(-1.5deg) skewX(-0.3deg);
+  box-shadow:
+    0 0 4px #00ff41,
+    0 0 20px rgba(0, 255, 65, 0.25),
+    0 0 60px rgba(0, 255, 65, 0.08),
+    -3px 0 0 rgba(255, 0, 0, 0.3),
+    3px 0 0 rgba(0, 0, 255, 0.2) !important;
+  background: var(--card-bg);
+  position: relative;
+  overflow: hidden;
+  animation: shake 6s ease-in-out infinite;
+}
+
+/* Scanlines densas */
+[data-deg="4"] .card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.45) 1px,
+    rgba(0, 0, 0, 0.45) 2px
+  );
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Ruido / vignette */
+[data-deg="4"] .card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
+  z-index: 19;
+  mix-blend-mode: multiply;
+}
+
+[data-deg="4"] .btn-primary {
+  border-radius: 0 !important;
+  background-color: #000800 !important;
+  border: 1px solid #00ff41 !important;
+  color: #00ff41 !important;
+  font-family: var(--font-mono) !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 0 6px rgba(0, 255, 65, 0.5), inset 0 0 10px rgba(0, 255, 65, 0.05);
+  transition-delay: 0.4s !important;
+  animation: flicker 3s step-end infinite;
+}
+
+[data-deg="4"] .btn-primary::before {
+  content: "> ";
+  color: #00ff41;
+}
+
+[data-deg="4"] .btn-primary:not(:disabled):hover {
+  background-color: #001400 !important;
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.8), inset 0 0 14px rgba(0, 255, 65, 0.1);
+}
+
+[data-deg="4"] .input-field {
+  border-radius: 0 !important;
+  border: 1px solid #00ff41 !important;
+  background: #000500 !important;
+  color: #00ff41 !important;
+  caret-color: #00ff41;
+  box-shadow:
+    inset 0 0 10px rgba(0, 255, 65, 0.08),
+    0 0 4px rgba(0, 255, 65, 0.2);
+  animation: inputFlicker 4s step-end infinite;
+}
+
+[data-deg="4"] .input-field::placeholder {
+  color: #003311;
+}
+
+[data-deg="4"] .field-label {
+  color: #009922;
+  font-size: 0.75em;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-shadow: 0 0 4px rgba(0, 153, 34, 0.5);
+}
+
+[data-deg="4"] .field-label::before {
+  content: "$ ";
+  color: #00ff41;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.8);
+}
+
+[data-deg="4"] h1, [data-deg="4"] h2 {
+  color: #00ff41;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-shadow:
+    0 0 6px #00ff41,
+    0 0 20px rgba(0, 255, 65, 0.4),
+    -1px 0 rgba(255, 0, 0, 0.5),
+    1px 0 rgba(0, 0, 255, 0.4);
+  animation: glitchText 4s step-end infinite;
+}
+
+[data-deg="4"] p, [data-deg="4"] span, [data-deg="4"] label {
+  color: #00cc33;
+  text-shadow: 0 0 3px rgba(0, 204, 51, 0.3);
+}
+
+[data-deg="4"] .error-message {
+  color: #ff0000 !important;
+  background: #0a0000 !important;
+  border-color: #ff0000 !important;
+  text-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
+  animation: blink 0.8s step-end infinite;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
+}
+
+[data-deg="4"] .progress-bar-fill {
+  background-color: #00ff41 !important;
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.8);
+  animation: flickerBar 1.5s step-end infinite;
+}
+
+/* =============================================
+   KEYFRAMES
+   ============================================= */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes flicker {
+  0%, 85%, 87%, 90%, 100% { opacity: 1; }
+  86% { opacity: 0.4; }
+  88% { opacity: 0.9; }
+  89% { opacity: 0.2; }
+}
+
+@keyframes flickerBar {
+  0%, 80%, 83%, 100% { opacity: 1; }
+  81% { opacity: 0.3; }
+  82% { opacity: 0.8; }
+}
+
+@keyframes inputFlicker {
+  0%, 92%, 95%, 100% { opacity: 1; }
+  93% { opacity: 0.7; }
+  94% { opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100%    { transform: rotate(-1.5deg) skewX(-0.3deg) translateX(0); }
+  2%          { transform: rotate(-1.5deg) skewX(-0.3deg) translateX(-1px); }
+  4%          { transform: rotate(-1.5deg) skewX(-0.3deg) translateX(1px); }
+  6%          { transform: rotate(-1.5deg) skewX(-0.5deg) translateX(0); }
+  96%         { transform: rotate(-1.5deg) skewX(-0.2deg) translateX(0); }
+  98%         { transform: rotate(-1.6deg) skewX(-0.4deg) translateX(-1px); }
+}
+
+@keyframes glitchText {
+  0%, 88%, 100% {
+    text-shadow:
+      0 0 6px #00ff41,
+      0 0 20px rgba(0, 255, 65, 0.4),
+      -1px 0 rgba(255, 0, 0, 0.5),
+      1px 0 rgba(0, 0, 255, 0.4);
+    transform: translateX(0);
+  }
+  89% {
+    text-shadow:
+      3px 0 #ff0000,
+      -3px 0 #0000ff,
+      0 0 10px #00ff41;
+    transform: translateX(2px);
+  }
+  90% {
+    text-shadow:
+      -2px 0 #ff0000,
+      2px 0 #00ffff,
+      0 0 8px #00ff41;
+    transform: translateX(-2px);
+  }
+  91% {
+    text-shadow:
+      0 0 6px #00ff41,
+      -1px 0 rgba(255, 0, 0, 0.5),
+      1px 0 rgba(0, 0, 255, 0.4);
+    transform: translateX(0);
+  }
+}

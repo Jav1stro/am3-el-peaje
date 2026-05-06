@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Registrar custom properties como <color> para que puedan transicionar */
+@property --bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f1f3f4;
+}
+@property --card-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ffffff;
+}
+@property --color-primary {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #4285f4;
+}
+@property --color-error {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #d93025;
+}
+@property --border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #dadce0;
+}
+
+:root {
+  --color-primary: #4285f4;
+  --color-primary-dark: #2b6fce;
+  --color-error: #d93025;
+  --bg: #f1f3f4;
+  --card-bg: #ffffff;
+  --text-main: #202124;
+  --text-secondary: #5f6368;
+  --border: #dadce0;
+  --font-main: 'Roboto', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+}
+
+/* Las custom properties registradas transicionan en html; todos los
+   elementos que usan var(--bg) etc. verán los valores interpolados */
+html {
+  transition:
+    --bg 1.4s ease,
+    --card-bg 1.4s ease,
+    --color-primary 1s ease,
+    --color-error 1s ease,
+    --border 1s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  font-family: var(--font-main);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+input, button, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: var(--color-primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.card {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
