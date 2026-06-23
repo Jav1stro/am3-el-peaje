@@ -1,8 +1,7 @@
-import { useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { useEffect, useRef } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useFlowStore } from '../store/useFlowStore'
 import Layout from '../components/Layout'
-import ConceptPhrase from '../components/ConceptPhrase'
 import CheckboxCaptcha from './captchas/CheckboxCaptcha'
 import ImageCaptcha from './captchas/ImageCaptcha'
 import AbsurdCaptcha from './captchas/AbsurdCaptcha'
@@ -17,67 +16,84 @@ const CAPTCHA_COMPONENTS = {
   tos: TosCaptcha,
 }
 
-const CAPTCHA_TITLES = {
-  checkbox: 'Verificación humana',
-  image: 'Selección de imágenes',
-  absurd: 'Verificación lógica',
-  distorted: 'Transcripción de texto',
-  tos: 'Términos de uso',
+const fade = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+  transition: { duration: 0.25 },
+}
+
+function VerifyingSpinner() {
+  return (
+    <Layout>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '48px 0',
+          gap: '16px',
+        }}
+      >
+        <div
+          style={{
+            width: '28px',
+            height: '28px',
+            border: '3px solid var(--border)',
+            borderTopColor: 'var(--color-primary)',
+            borderRadius: '50%',
+            animation: 'spin 0.9s linear infinite',
+          }}
+        />
+        <p
+          style={{
+            margin: 0,
+            fontSize: '13px',
+            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.04em',
+          }}
+        >
+          Verificando...
+        </p>
+      </div>
+    </Layout>
+  )
 }
 
 export default function CaptchaRouter() {
-  const captchaQueue = useFlowStore((s) => s.captchaQueue)
-  const captchaIndex = useFlowStore((s) => s.captchaIndex)
-  const phraseIndex = useFlowStore((s) => s.phraseIndex)
-  const advanceCaptcha = useFlowStore((s) => s.advanceCaptcha)
-  const advancePhraseIndex = useFlowStore((s) => s.advancePhraseIndex)
-  const nextStep = useFlowStore((s) => s.nextStep)
-
-  const [showingPhrase, setShowingPhrase] = useState(true)
-
-  function handlePhraseDone() {
-    setShowingPhrase(false)
-  }
+  const pool = useFlowStore((s) => s.pool)
+  const poolIndex = useFlowStore((s) => s.poolIndex)
+  const isVerifying = useFlowStore((s) => s.isVerifying)
+  const setVerifying = useFlowStore((s) => s.setVerifying)
+  const nextCaptcha = useFlowStore((s) => s.nextCaptcha)
+  const timerRef = useRef(null)
 
   function handleCaptchaDone() {
-    const nextIndex = captchaIndex + 1
-    if (nextIndex >= captchaQueue.length) {
-      nextStep()
-      return
-    }
-    advanceCaptcha()
-    advancePhraseIndex()
-    setShowingPhrase(true)
+    setVerifying(true)
+    timerRef.current = setTimeout(() => {
+      nextCaptcha()
+    }, 1500)
   }
 
-  const currentType = captchaQueue[captchaIndex]
+  useEffect(() => () => clearTimeout(timerRef.current), [])
+
+  const currentType = pool[poolIndex]
   const CaptchaComponent = CAPTCHA_COMPONENTS[currentType]
+  const animKey = isVerifying ? 'verifying' : `${currentType}-${poolIndex}`
 
   return (
     <AnimatePresence mode="wait">
-      {showingPhrase ? (
-        <ConceptPhrase
-          key={`phrase-${phraseIndex}`}
-          index={phraseIndex}
-          onDone={handlePhraseDone}
-        />
-      ) : (
-        <Layout key={`captcha-${captchaIndex}`}>
-          <p
-            style={{
-              fontSize: '11px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              color: 'var(--text-secondary)',
-              marginBottom: '16px',
-              fontWeight: '500',
-            }}
-          >
-            Paso {captchaIndex + 2} de 6 · {CAPTCHA_TITLES[currentType]}
-          </p>
-          {CaptchaComponent && <CaptchaComponent onDone={handleCaptchaDone} />}
-        </Layout>
-      )}
+      <motion.div key={animKey} {...fade} style={{ width: '100%' }}>
+        {isVerifying ? (
+          <VerifyingSpinner />
+        ) : (
+          <Layout>
+            {CaptchaComponent && <CaptchaComponent onDone={handleCaptchaDone} />}
+          </Layout>
+        )}
+      </motion.div>
     </AnimatePresence>
   )
 }

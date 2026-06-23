@@ -1,3 +1,26 @@
+export const captchaMeta = {
+  checkbox: {
+    label: 'Checkbox',
+    description: 'El captcha clásico de "No soy un robot". El visitante hace clic en un checkbox, que gira brevemente simulando verificación, y luego muestra un check verde.',
+  },
+  image: {
+    label: 'Selección de imágenes',
+    description: 'Grilla 3×3 de emojis con una pregunta ambigua (ej: "Seleccioná todas las imágenes que contengan una naranja"). El visitante selecciona tiles y presiona Verificar. Cualquier selección es aceptada.',
+  },
+  absurd: {
+    label: 'Pregunta absurda',
+    description: 'Una pregunta aparentemente lógica con opciones deliberadamente ambiguas o técnicamente correctas (ej: "¿Qué es el agua?" con opciones "Un líquido", "H₂O", "Húmeda", "Sí"). Cualquier respuesta es aceptada.',
+  },
+  distorted: {
+    label: 'Texto distorsionado',
+    description: 'Un texto estilizado con números en lugar de letras (leet speak) que el visitante debe transcribir. Cualquier texto ingresado es aceptado.',
+  },
+  tos: {
+    label: 'Términos y condiciones',
+    description: 'Un documento legal interminable que crece al hacer scroll: al llegar al final, aparece una Adenda I, luego una Adenda II. El botón "Acepto" solo se habilita tras scrollear todo el contenido.',
+  },
+}
+
 export const captchas = {
   image: [
     {

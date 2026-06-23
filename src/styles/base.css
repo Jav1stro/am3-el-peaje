@@ -2,55 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Registrar custom properties como <color> para que puedan transicionar */
-@property --bg {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #f1f3f4;
-}
-@property --card-bg {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #ffffff;
-}
-@property --color-primary {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #4285f4;
-}
-@property --color-error {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #d93025;
-}
-@property --border {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #dadce0;
-}
-
 :root {
   --color-primary: #4285f4;
-  --color-primary-dark: #2b6fce;
+  --color-primary-dark: #3367d6;
   --color-error: #d93025;
-  --bg: #f1f3f4;
+  --bg: #f0f2f5;
   --card-bg: #ffffff;
   --text-main: #202124;
   --text-secondary: #5f6368;
-  --border: #dadce0;
-  --font-main: 'Roboto', system-ui, sans-serif;
-  --font-mono: 'Space Mono', 'Courier New', monospace;
-}
-
-/* Las custom properties registradas transicionan en html; todos los
-   elementos que usan var(--bg) etc. verán los valores interpolados */
-html {
-  transition:
-    --bg 1.4s ease,
-    --card-bg 1.4s ease,
-    --color-primary 1s ease,
-    --color-error 1s ease,
-    --border 1s ease;
+  --border: #d3d3d3;
+  --font-main: system-ui, -apple-system, Arial, sans-serif;
+  --font-mono: system-ui, -apple-system, Arial, sans-serif;
+  --tile-bg: #f8f9fa;
+  --tile-selected-bg: rgba(66, 133, 244, 0.08);
+  --option-bg: #f8f9fa;
+  --option-selected-bg: rgba(66, 133, 244, 0.08);
+  --input-bg: #ffffff;
+  --error-bg: #fce8e6;
+  --tos-bg: #f8f9fa;
+  --border-radius: 3px;
+  --card-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  --primary-rgb: 66, 133, 244;
+  --error-rgb: 217, 48, 37;
 }
 
 * {
@@ -60,10 +33,17 @@ html {
 html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg);
+  min-height: 100vh;
   font-family: var(--font-main);
   color: var(--text-main);
-  min-height: 100vh;
+  background-color: var(--bg);
+}
+
+[data-theme="matrix"] body {
+  background-image:
+    linear-gradient(rgba(0, 255, 65, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.055) 1px, transparent 1px);
+  background-size: 6px 6px;
 }
 
 #root {
@@ -82,12 +62,132 @@ a {
   text-decoration: underline;
 }
 
+/* ─── Card ─── */
 .card {
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   border: 1px solid var(--border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  background-color: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  position: relative;
+  overflow: hidden;
 }
+
+[data-theme="matrix"] .card {
+  animation: cardGlitch 12s step-end infinite;
+}
+
+[data-theme="matrix"] .card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.2) 2px,
+    rgba(0, 0, 0, 0.2) 3px
+  );
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* ─── Button ─── */
+.btn-primary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--border-radius);
+  padding: 10px 24px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  cursor: pointer;
+  width: 100%;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 0 6px rgba(var(--primary-rgb), 0.15);
+  transition: box-shadow 0.15s, background-color 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: rgba(var(--primary-rgb), 0.07);
+  box-shadow: 0 0 14px rgba(var(--primary-rgb), 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ─── Input ─── */
+.input-field {
+  background-color: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  color: var(--text-main);
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  outline: none;
+  caret-color: var(--color-primary);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+
+.input-field:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 8px rgba(var(--primary-rgb), 0.2);
+}
+
+.input-field::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+/* ─── Error ─── */
+.error-message {
+  background-color: var(--error-bg);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 6px rgba(var(--error-rgb), 0.4);
+  box-shadow: 0 0 8px rgba(var(--error-rgb), 0.15);
+}
+
+/* ─── Keyframes ─── */
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes cardGlitch {
+  0%, 90%, 93%, 100% {
+    transform: none;
+    filter: none;
+  }
+  91% {
+    transform: translateX(3px);
+    filter:
+      drop-shadow(-3px 0 rgba(255, 0, 0, 0.5))
+      drop-shadow(3px 0 rgba(0, 80, 255, 0.4));
+  }
+  92% {
+    transform: translateX(-2px) skewX(0.5deg);
+    filter:
+      drop-shadow(2px 0 rgba(255, 0, 0, 0.3));
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes fadeInAddendum {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

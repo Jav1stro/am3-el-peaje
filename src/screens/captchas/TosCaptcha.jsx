@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { captchas } from '../../data/captchas'
 import DegradedButton from '../../components/DegradedButton'
 
-// Fases: 0 = TOS principal, 1 = Adenda I revelada, 2 = Adenda II revelada, 3 = aceptado
 const PHASE_HEIGHTS = ['260px', '420px', '560px']
 
 export default function TosCaptcha({ onDone }) {
@@ -12,12 +11,9 @@ export default function TosCaptcha({ onDone }) {
   const scrollRef = useRef(null)
   const addendumRef = useRef(null)
 
-  // Cuando cambia la fase, expandir el contenedor y scrollear al nuevo contenido
   useEffect(() => {
     if (phase === 0) return
     setContainerHeight(PHASE_HEIGHTS[Math.min(phase, PHASE_HEIGHTS.length - 1)])
-
-    // Scrollear al inicio del nuevo bloque después de que el DOM se actualiza
     setTimeout(() => {
       if (addendumRef.current) {
         addendumRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -32,15 +28,12 @@ export default function TosCaptcha({ onDone }) {
 
     if (atBottom) {
       if (phase === 0) {
-        // Revelar Adenda I
         setPhase(1)
         setCanAccept(false)
       } else if (phase === 1) {
-        // Revelar Adenda II
         setPhase(2)
         setCanAccept(false)
       } else if (phase === 2) {
-        // Ahora sí pueden aceptar
         setCanAccept(true)
       }
     }
@@ -48,19 +41,38 @@ export default function TosCaptcha({ onDone }) {
 
   return (
     <div style={{ position: 'relative' }}>
-      <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-main)', marginBottom: '2px' }}>
+      <p
+        style={{
+          fontSize: '13px',
+          color: 'var(--text-main)',
+          marginBottom: '2px',
+          letterSpacing: '0.04em',
+        }}
+      >
         Términos y condiciones
       </p>
-      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+      <p
+        style={{
+          fontSize: '11px',
+          color: 'var(--text-secondary)',
+          marginBottom: '10px',
+          letterSpacing: '0.02em',
+        }}
+      >
         Debés leer y aceptar la totalidad del documento para continuar.
         {phase > 0 && (
-          <span style={{ color: 'var(--color-error)', marginLeft: '4px', fontWeight: '500' }}>
+          <span
+            style={{
+              color: 'var(--color-error)',
+              marginLeft: '4px',
+              textShadow: '0 0 4px rgba(var(--error-rgb),0.4)',
+            }}
+          >
             {phase === 1 ? ' — Se ha agregado: Adenda I' : ' — Se ha agregado: Adenda II'}
           </span>
         )}
       </p>
 
-      {/* Contenedor que crece */}
       <div style={{ position: 'relative' }}>
         <div
           ref={scrollRef}
@@ -70,22 +82,20 @@ export default function TosCaptcha({ onDone }) {
             transition: 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
             overflowY: 'scroll',
             border: '1px solid var(--border)',
-            borderRadius: '4px',
             padding: '12px 14px',
             fontSize: '11px',
             lineHeight: '1.75',
             color: 'var(--text-secondary)',
-            backgroundColor: '#fafafa',
-            marginBottom: '0',
+            backgroundColor: 'var(--tos-bg)',
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.02em',
             WebkitOverflowScrolling: 'touch',
             position: 'relative',
             zIndex: 1,
           }}
         >
-          {/* TOS principal */}
           <div style={{ whiteSpace: 'pre-wrap' }}>{captchas.tos}</div>
 
-          {/* Adenda I — aparece al llegar al final */}
           {phase >= 1 && (
             <div
               ref={phase === 1 ? addendumRef : null}
@@ -101,7 +111,6 @@ export default function TosCaptcha({ onDone }) {
             </div>
           )}
 
-          {/* Adenda II — aparece al llegar al final de Adenda I */}
           {phase >= 2 && (
             <div
               ref={phase === 2 ? addendumRef : null}
@@ -119,7 +128,6 @@ export default function TosCaptcha({ onDone }) {
           )}
         </div>
 
-        {/* Texto fantasma que "se escapa" por abajo del contenedor */}
         {phase < 2 && (
           <div
             aria-hidden="true"
@@ -131,7 +139,7 @@ export default function TosCaptcha({ onDone }) {
               fontSize: '10px',
               lineHeight: '1.5',
               color: 'var(--text-secondary)',
-              opacity: 0.25,
+              opacity: 0.2,
               overflow: 'hidden',
               height: '22px',
               pointerEvents: 'none',
@@ -139,34 +147,22 @@ export default function TosCaptcha({ onDone }) {
               whiteSpace: 'nowrap',
               textOverflow: 'clip',
               filter: 'blur(0.5px)',
+              fontFamily: 'var(--font-mono)',
             }}
           >
             {phase === 0
-              ? 'ADENDA I — DISPOSICIONES COMPLEMENTARIAS AL TRATAMIENTO DE DATOS CONDUCTUALES Versión 3.0.2 — Incorporada por referencia...'
+              ? 'ADENDA I — DISPOSICIONES COMPLEMENTARIAS AL TRATAMIENTO DE DATOS CONDUCTUALES...'
               : 'ADENDA II — CLAUSULAS ESPECIALES PARA USUARIOS QUE HAN LLEGADO HASTA AQUÍ...'}
           </div>
         )}
       </div>
 
-      {/* Espacio para el texto fantasma */}
       <div style={{ height: phase < 2 ? '30px' : '14px', transition: 'height 0.4s ease' }} />
 
-      {!canAccept && (
-        <p style={{ fontSize: '11px', color: '#999', textAlign: 'center', marginBottom: '10px' }}>
-          ↓ Scrolleá hasta el final para continuar
-        </p>
-      )}
 
       <DegradedButton onClick={onDone} disabled={!canAccept}>
         Acepto y continúo
       </DegradedButton>
-
-      <style>{`
-        @keyframes fadeInAddendum {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   )
 }

@@ -1,20 +1,13 @@
 import { useState, useRef } from 'react'
 import { captchas } from '../../data/captchas'
-import { useFlowStore } from '../../store/useFlowStore'
 import DegradedButton from '../../components/DegradedButton'
 
 export default function ImageCaptcha({ onDone }) {
-  const addError = useFlowStore((s) => s.addError)
-  const degradationLevel = useFlowStore((s) => s.degradationLevel)
-  const setDegradation = useFlowStore((s) => s.setDegradation)
-
   const variantRef = useRef(
     captchas.image[Math.floor(Math.random() * captchas.image.length)]
   )
   const variant = variantRef.current
-
   const [selected, setSelected] = useState([])
-  const [error, setError] = useState(null)
 
   function toggleTile(index) {
     setSelected((prev) =>
@@ -22,44 +15,28 @@ export default function ImageCaptcha({ onDone }) {
     )
   }
 
-  function handleVerify() {
-    const correctIndices = variant.tiles
-      .map((t, i) => (t.correct ? i : -1))
-      .filter((i) => i !== -1)
-
-    const isExact =
-      selected.length === correctIndices.length &&
-      correctIndices.every((i) => selected.includes(i))
-
-    if (!isExact) {
-      addError()
-      setDegradation(Math.min(degradationLevel + 1, 4))
-      setError('Selección incorrecta. Por favor revisá e intentá de nuevo.')
-      setTimeout(() => {
-        setError(null)
-        onDone()
-      }, 1500)
-    } else {
-      onDone()
-    }
-  }
-
   return (
     <div>
       <p
         style={{
-          fontSize: '14px',
-          fontWeight: '500',
-          color: '#fff',
+          fontSize: '13px',
+          color: 'var(--bg)',
           padding: '8px 12px',
           backgroundColor: 'var(--color-primary)',
-          borderRadius: '4px 4px 0 0',
           margin: '0 0 2px 0',
+          letterSpacing: '0.04em',
         }}
       >
         {variant.question}
       </p>
-      <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+      <p
+        style={{
+          fontSize: '11px',
+          color: 'var(--text-secondary)',
+          marginBottom: '8px',
+          letterSpacing: '0.04em',
+        }}
+      >
         Si no hay ninguna, hacé clic en Verificar.
       </p>
 
@@ -77,8 +54,9 @@ export default function ImageCaptcha({ onDone }) {
             onClick={() => toggleTile(i)}
             style={{
               aspectRatio: '1',
-              backgroundColor: selected.includes(i) ? '#e8f0fe' : '#f5f5f5',
-              border: `3px solid ${selected.includes(i) ? 'var(--color-primary)' : 'transparent'}`,
+              backgroundColor: selected.includes(i) ? 'var(--tile-selected-bg)' : 'var(--tile-bg)',
+              border: `3px solid ${selected.includes(i) ? 'var(--color-primary)' : 'var(--border)'}`,
+              boxShadow: selected.includes(i) ? '0 0 8px rgba(var(--primary-rgb), 0.3)' : 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -86,6 +64,7 @@ export default function ImageCaptcha({ onDone }) {
               cursor: 'pointer',
               position: 'relative',
               userSelect: 'none',
+              transition: 'border-color 0.1s, background-color 0.1s',
             }}
           >
             {tile.emoji}
@@ -96,14 +75,13 @@ export default function ImageCaptcha({ onDone }) {
                   bottom: '4px',
                   right: '4px',
                   backgroundColor: 'var(--color-primary)',
-                  color: '#fff',
-                  borderRadius: '50%',
-                  width: '18px',
-                  height: '18px',
+                  color: 'var(--bg)',
+                  width: '16px',
+                  height: '16px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '11px',
+                  fontSize: '10px',
                   fontWeight: 'bold',
                 }}
               >
@@ -115,9 +93,10 @@ export default function ImageCaptcha({ onDone }) {
                 position: 'absolute',
                 bottom: '2px',
                 left: '2px',
-                fontSize: '8px',
-                color: '#aaa',
-                fontFamily: 'monospace',
+                fontSize: '7px',
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-mono)',
+                opacity: 0.6,
               }}
             >
               {tile.label}
@@ -126,24 +105,7 @@ export default function ImageCaptcha({ onDone }) {
         ))}
       </div>
 
-      {error && (
-        <div
-          className="error-message"
-          style={{
-            padding: '10px 12px',
-            backgroundColor: '#fce8e6',
-            border: '1px solid #f5c6c2',
-            borderRadius: '4px',
-            fontSize: '13px',
-            color: 'var(--color-error)',
-            marginBottom: '12px',
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      <DegradedButton onClick={handleVerify}>Verificar</DegradedButton>
+      <DegradedButton onClick={onDone}>Verificar</DegradedButton>
     </div>
   )
 }

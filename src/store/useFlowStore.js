@@ -1,47 +1,33 @@
 import { create } from 'zustand'
 
-const CAPTCHA_QUEUE = ['checkbox', 'image', 'absurd', 'distorted', 'tos']
-const TOTAL_STEPS = 7 // 0:Email 1:EmailFailed 2:EmailSent 3:NoEmail 4:PhysicalCount 5:CaptchaRouter 6:Ending
+export const CAPTCHA_TYPES = ['checkbox', 'image', 'absurd', 'distorted', 'tos']
 
-const randomEndingIndex = () => Math.floor(Math.random() * 3)
-
-const initialState = () => ({
-  step: 0,
-  email: '',
-  degradationLevel: 0,
-  captchaQueue: [...CAPTCHA_QUEUE],
-  captchaIndex: 0,
-  emailAttempts: 0,
-  endingIndex: randomEndingIndex(),
-  errors: 0,
-  mathChallenge: null,
-  phraseIndex: 0,
-})
+function shuffled(avoidFirst = null) {
+  const arr = [...CAPTCHA_TYPES]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  if (avoidFirst && arr[0] === avoidFirst) {
+    ;[arr[0], arr[1]] = [arr[1], arr[0]]
+  }
+  return arr
+}
 
 export const useFlowStore = create((set) => ({
-  ...initialState(),
+  pool: shuffled(),
+  poolIndex: 0,
+  isVerifying: false,
 
-  nextStep: () => set((state) => ({ step: state.step + 1 })),
+  nextCaptcha: () =>
+    set((state) => {
+      const nextIndex = state.poolIndex + 1
+      if (nextIndex < state.pool.length) {
+        return { poolIndex: nextIndex, isVerifying: false }
+      }
+      const lastType = state.pool[state.pool.length - 1]
+      return { pool: shuffled(lastType), poolIndex: 0, isVerifying: false }
+    }),
 
-  goToStep: (step) => set({ step }),
-
-  addError: () => set((state) => ({ errors: state.errors + 1 })),
-
-  setEmail: (email) => set({ email, emailAttempts: 0 }),
-
-  incrementEmailAttempts: () =>
-    set((state) => ({ emailAttempts: state.emailAttempts + 1 })),
-
-  setDegradation: (level) =>
-    set({ degradationLevel: Math.min(Math.max(level, 0), 4) }),
-
-  setMathChallenge: (challenge) => set({ mathChallenge: challenge }),
-
-  advanceCaptcha: () =>
-    set((state) => ({ captchaIndex: state.captchaIndex + 1 })),
-
-  advancePhraseIndex: () =>
-    set((state) => ({ phraseIndex: state.phraseIndex + 1 })),
-
-  resetFlow: () => set({ ...initialState() }),
+  setVerifying: (v) => set({ isVerifying: v }),
 }))

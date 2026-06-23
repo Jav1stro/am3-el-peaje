@@ -8,7 +8,7 @@ export default function CheckboxCaptcha({ onDone }) {
     setState('verifying')
     setTimeout(() => {
       setState('done')
-      setTimeout(onDone, 300)
+      setTimeout(onDone, 400)
     }, 1100)
   }
 
@@ -16,12 +16,11 @@ export default function CheckboxCaptcha({ onDone }) {
     <div
       style={{
         border: '1px solid var(--border)',
-        borderRadius: '4px',
         padding: '16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: 'var(--tile-bg)',
         cursor: state === 'idle' ? 'pointer' : 'default',
         userSelect: 'none',
       }}
@@ -32,37 +31,39 @@ export default function CheckboxCaptcha({ onDone }) {
           style={{
             width: '28px',
             height: '28px',
-            border: `2px solid ${state === 'done' ? '#1a73e8' : '#aaa'}`,
-            borderRadius: '2px',
+            border: `2px solid ${state === 'done' ? 'var(--color-primary)' : 'var(--border)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: state === 'done' ? '#1a73e8' : '#fff',
+            backgroundColor: state === 'done' ? 'rgba(var(--primary-rgb), 0.15)' : 'transparent',
             flexShrink: 0,
             animation: state === 'verifying' ? 'spin 0.6s linear infinite' : 'none',
+            boxShadow: state === 'done' ? '0 0 6px rgba(var(--primary-rgb), 0.4)' : 'none',
           }}
         >
           {state === 'done' && (
-            <span style={{ color: '#fff', fontSize: '16px', lineHeight: 1 }}>✓</span>
+            <span style={{ color: 'var(--color-primary)', fontSize: '16px', lineHeight: 1 }}>✓</span>
           )}
           {state === 'verifying' && (
-            <span style={{ color: '#aaa', fontSize: '10px' }}>◌</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>◌</span>
           )}
         </div>
-        <span
-          style={{
-            fontSize: '14px',
-            color: 'var(--text-main)',
-            fontWeight: '400',
-          }}
-        >
+        <span style={{ fontSize: '13px', color: 'var(--text-main)', letterSpacing: '0.04em' }}>
           No soy un robot
         </span>
       </div>
 
       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <div style={{ fontSize: '10px', color: '#aaa', lineHeight: 1.3 }}>
-          <div style={{ fontSize: '18px', marginBottom: '2px', opacity: 0.6 }}>🛡</div>
+        <div
+          style={{
+            fontSize: '9px',
+            color: 'var(--text-secondary)',
+            lineHeight: 1.4,
+            letterSpacing: '0.06em',
+            fontFamily: 'var(--font-mono)',
+          }}
+        >
+          <div style={{ fontSize: '16px', marginBottom: '2px', opacity: 0.5 }}>🛡</div>
           <div>reCAPTCHA</div>
           <div>Privacidad · Términos</div>
         </div>

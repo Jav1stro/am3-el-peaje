@@ -2,7 +2,7 @@
 
 ## Qué es este proyecto
 
-**El Peaje** es una instalación de arte interactivo. Un código QR impreso en sala redirige al visitante a esta aplicación web. La app simula un sistema burocrático de "verificación de identidad" para acceder a un objeto simple (un vaso de agua dentro de una caja de cristal). El sistema nunca abre la caja. Siempre falla.
+**El Peaje** es una instalación de arte interactivo. Un código QR impreso en sala redirige al visitante a esta aplicación web. La app simula un sistema burocrático de "verificación de identidad" para acceder a un objeto simple (un vaso de agua dentro de una caja de cristal). El sistema nunca abre la caja.
 
 El concepto central es el **captcha** como metáfora del sometimiento digital cotidiano. La obra cita a Varoufakis (tecnofeudalismo), Byung-Chul Han (transparencia como autovigilancia) y Adorno (industria cultural).
 
@@ -11,257 +11,170 @@ El concepto central es el **captcha** como metáfora del sometimiento digital co
 ## Stack
 
 - **React** con Vite
-- **React Router** para las rutas de cada paso
-- **Tailwind CSS** para estilos base
-- **CSS puro** para los efectos de degradación (no usar librerías de animación externas)
-- **Framer Motion** solo para transiciones entre pantallas
-- Sin backend. Todo es frontend puro. No se envían mails reales.
+- **Tailwind CSS** para estilos base (usado mínimamente)
+- **CSS puro** para la estética y efectos visuales
+- **Framer Motion** solo para transiciones entre captchas
+- **Zustand** para estado global
+- Sin backend. Todo es frontend puro.
 
 ---
 
-## Estructura de archivos esperada
+## Estructura de archivos
 
 ```
 el-peaje/
 ├── CLAUDE.md
+├── CONTEXT.md                         # Glosario de dominio
+├── docs/adr/
+│   ├── 0001-loop-infinito.md          # Decisión: loop vs flujo lineal
+│   └── 0002-esteticas-intercambiables.md # Decisión: sistema de estéticas
 ├── index.html
 ├── package.json
 ├── vite.config.js
 ├── tailwind.config.js
 ├── src/
 │   ├── main.jsx
-│   ├── App.jsx
+│   ├── App.jsx                        # Renderiza CaptchaRouter + MatrixRain condicional
 │   ├── store/
-│   │   └── useFlowStore.js        # Zustand store: estado global del flujo
+│   │   ├── useFlowStore.js            # pool, poolIndex, isVerifying
+│   │   └── useThemeStore.js           # themeId, setTheme
 │   ├── data/
-│   │   ├── captchas.js            # Datos de todos los captchas
-│   │   ├── phrases.js             # Frases conceptuales que aparecen entre pasos
-│   │   └── endings.js             # Los 3 desenlaces posibles
+│   │   ├── captchas.js                # Datos de todos los captchas
+│   │   └── themes.js                  # Definiciones de las 3 estéticas + apply/store
 │   ├── styles/
-│   │   ├── base.css
-│   │   └── degradation.css        # Clases CSS para cada nivel de degradación
+│   │   ├── base.css                   # CSS variables (default: classic), efectos condicionales por [data-theme]
+│   │   └── degradation.css            # Guardado para uso futuro (inactivo)
 │   ├── components/
-│   │   ├── Layout.jsx             # Wrapper con la card central
-│   │   ├── ProgressBar.jsx
-│   │   ├── ConceptPhrase.jsx      # Frase conceptual flotante entre pasos
-│   │   └── DegradedButton.jsx     # Botón que cambia con la degradación
+│   │   ├── Layout.jsx                 # Chrome condicional: solo matrix muestra tease + QR finders
+│   │   ├── DegradedButton.jsx         # Botón base (usa clase .btn-primary)
+│   │   └── MatrixRain.jsx             # Canvas con lluvia de caracteres (solo estética matrix)
 │   └── screens/
-│       ├── EmailStep.jsx          # Paso 1: mail falso
-│       ├── EmailFailed.jsx        # Paso 1b: "email inválido", reintentar
-│       ├── EmailSent.jsx          # Paso 1c: "te enviamos un código"
-│       ├── NoEmailReceived.jsx    # Paso 1d: "no me llegó" → cuenta regresiva física
-│       ├── PhysicalCount.jsx      # Paso 2: cuenta en papel, ingresar resultado
-│       ├── CaptchaRouter.jsx      # Paso 3+: distribuye entre tipos de captcha
-│       ├── captchas/
-│       │   ├── CheckboxCaptcha.jsx
-│       │   ├── ImageCaptcha.jsx
-│       │   ├── AbsurdCaptcha.jsx
-│       │   ├── DistortedTextCaptcha.jsx
-│       │   └── TosCaptcha.jsx
-│       └── Ending.jsx             # Pantalla final con el error
+│       ├── CaptchaRouter.jsx          # Loop infinito + spinner "Verificando..."
+│       ├── DocsPage.jsx               # Catálogo de captchas + selector de estética
+│       └── captchas/
+│           ├── CheckboxCaptcha.jsx
+│           ├── ImageCaptcha.jsx
+│           ├── AbsurdCaptcha.jsx
+│           ├── DistortedTextCaptcha.jsx
+│           └── TosCaptcha.jsx
 ```
 
 ---
 
 ## Estado global (Zustand)
 
+### useFlowStore
+
 ```js
 {
-  step: Number,               // paso actual (0–N)
-  email: String,
-  degradationLevel: Number,   // 0 a 4 — controla el CSS de degradación
-  captchaQueue: Array,        // cola de captchas pendientes
-  emailAttempts: Number,      // cuántas veces reintentó el mail
-  endingIndex: Number,        // 0, 1 o 2 — elegido al azar al inicio
-  errors: Number,             // errores acumulados
+  pool: Array,        // secuencia shuffleada de tipos de captcha
+  poolIndex: Number,  // posición actual en el pool
+  isVerifying: Boolean, // true mientras muestra "Verificando..."
 }
 ```
 
----
+Acciones:
+- `nextCaptcha()` — avanza el índice; si el pool se agotó, lo reshufflea evitando repetición inmediata
+- `setVerifying(bool)` — activa/desactiva el spinner
 
-## Flujo de pantallas
-
-### Paso 0 — EmailStep
-- Campo de email limpio, interfaz tipo Google/reCAPTCHA
-- Cualquier email que se ingrese la primera vez → ir a EmailFailed
-
-### Paso 0b — EmailFailed
-- Mensaje: "La dirección ingresada no parece válida. Por favor verificá e intentá nuevamente."
-- El campo vuelve a mostrarse con el email anterior pre-cargado
-- Al reintentar (con cualquier valor) → ir a EmailSent
-
-### Paso 0c — EmailSent
-- Mensaje: "Te enviamos un código de verificación a [email]. Puede demorar unos minutos."
-- Botón: "Ingresar código" → lleva a pantalla de espera con spinner
-- Después de 8 segundos de spinner, aparece link: "No recibí el correo"
-
-### Paso 0d — NoEmailReceived
-- Mensaje: "Entendemos que a veces los sistemas fallan. Para continuar de todos modos, necesitamos verificarte de otra manera."
-- **Instrucción física**: "Tomá un papel y un bolígrafo. Calculá: [número aleatorio entre 200 y 500] + [número aleatorio entre 100 y 300]. Escribí el resultado en el papel. Vas a necesitarlo."
-- Botón: "Ya lo tengo" → PhysicalCount
-
-### Paso 1 — PhysicalCount
-- Muestra: "Ingresá el resultado que calculaste en el papel."
-- Campo numérico
-- **La respuesta correcta es irrelevante** — cualquier número que ingresen avanza. Pero si el número ingresado es exactamente correcto, mostrar un mensaje ligeramente inquietante antes de avanzar: "Correcto. Cómo lo sabías."
-- Si es incorrecto: "Resultado incorrecto. Por favor revisá tu cálculo y reintentá." — se puede reintentar infinitamente pero cada 2 intentos sube el degradationLevel
-
-### Transición conceptual (entre pasos)
-- Antes de cada captcha, mostrar por 2–3 segundos una frase en pantalla completa (fondo negro, texto centrado, tipografía limpia)
-- Ver lista de frases en `data/phrases.js`
-
-### Pasos 2–6 — Captchas (en orden)
-1. **CheckboxCaptcha**: checkbox "No soy un robot". Gira mientras "verifica". Avanza solo.
-2. **ImageCaptcha**: grilla 3×3 de emojis/iconos. Pregunta ambigua (ej: "Seleccioná las naranjas" pero hay objetos que podrían serlo según interpretación). Siempre marca error si no seleccionaste exactamente lo esperado — aunque lo esperado sea discutible.
-3. **AbsurdCaptcha**: preguntas tipo "¿cuál de estas opciones es un color?" con opciones ambiguas (dos "Azul" idénticas, "El silencio", etc.). Cualquier respuesta puede ser marcada como incorrecta.
-4. **DistortedTextCaptcha**: texto distorsionado para transcribir. Si lo escribe bien → "Respuesta inválida, el texto ha cambiado. Intentá de nuevo." Si lo escribe mal → mismo mensaje. Avanza después de 2 intentos.
-5. **TosCaptcha**: términos y condiciones que deben scrollearse hasta el final para habilitar el botón. Los términos mencionan explícitamente que los datos serán usados para entrenar IA, que el acceso es un privilegio, etc.
-
-### Paso final — Ending
-- Desenlace elegido al azar entre los 3 al inicio de la sesión:
-  1. "Su comportamiento no coincide con patrones humanos conocidos. Acceso denegado."
-  2. "Esta sección está reservada para sistemas automatizados. Los usuarios humanos no están autorizados."
-  3. `ERR_VERIFICATION_LOOP_0x4F2 / undefined is not a function / null` + reinicio automático
-- Botón "Volver a intentar" → reinicia desde el principio (con nuevo endingIndex aleatorio)
-
----
-
-## Sistema de degradación visual
-
-Usar la clase CSS `data-degradation="N"` en el elemento `<body>` o en el wrapper principal. N va de 0 a 4.
-
-| Nivel | Qué cambia |
-|-------|------------|
-| 0 | Interfaz limpia, Google-like, sans-serif, colores neutros |
-| 1 | Tipografía levemente monoespaciada en algunos elementos. Bordes más marcados. |
-| 2 | Card ligeramente rotada (`rotate(-0.5deg)`). Color primario deriva hacia rojo/naranja. Algunos textos en `font-family: monospace`. |
-| 3 | Border-radius eliminado. Tipografía mezclada. Aparecen caracteres extraños en labels. Colores desaturados salvo errores en rojo intenso. |
-| 4 | Layout roto: card con transform adicional. Textos superpuestos. Letras reemplazadas por equivalentes numéricos (h4ck3r style). Botones con delays antes de responder. |
-
-Implementar en `degradation.css` como atributos CSS: `[data-deg="2"] .card { transform: rotate(-0.5deg); }` etc.
-
----
-
-## Frases conceptuales (data/phrases.js)
-
-Mostrar entre pasos. Una por transición, en orden:
+### useThemeStore
 
 ```js
-export const phrases = [
-  "En 1950, Alan Turing preguntó si las máquinas podían pensar.",
-  "Hoy, las máquinas preguntan si nosotros podemos.",
-  "Cada verificación entrena el sistema que te verifica.",
-  "Tu atención es el precio. El acceso, la promesa.",
-  "No hay error. El sistema funciona exactamente como fue diseñado.",
-  "¿Cuánto tiempo llevas demostrando que existís?",
-];
+{
+  themeId: String,    // 'classic' | 'matrix' | 'darktech'
+}
 ```
+
+Acciones:
+- `setTheme(id)` — persiste en localStorage, aplica CSS variables y actualiza el estado
 
 ---
 
-## Datos de captchas (data/captchas.js)
+## Flujo
 
-### ImageCaptcha — variantes
-```js
-[
-  {
-    question: "Seleccioná todas las imágenes que contengan una naranja.",
-    tiles: [
-      { emoji: "🍊", label: "img_0481", correct: true },
-      { emoji: "🟠", label: "img_0482", correct: true },   // ¿es una naranja?
-      { emoji: "🌅", label: "img_0483", correct: false },  // tiene naranja pero es un atardecer
-      { emoji: "🍋", label: "img_0484", correct: false },
-      { emoji: "🎃", label: "img_0485", correct: false },  // es naranja como color
-      { emoji: "🟧", label: "img_0486", correct: false },
-      { emoji: "🥕", label: "img_0487", correct: false },
-      { emoji: "🍑", label: "img_0488", correct: false },
-      { emoji: "🌸", label: "img_0489", correct: false },
-    ]
-  },
-  // más variantes...
-]
-```
+No hay flujo. La app no tiene inicio ni final.
 
-### AbsurdCaptcha — variantes
-```js
-[
-  {
-    question: "¿Cuál de estas opciones es un color?",
-    note: "Seleccioná todas las correctas.",
-    options: ["Azul", "Martes", "El silencio", "Azul"],
-    // Las dos "Azul" son idénticas pero el sistema espera que elijas AMBAS o NINGUNA
-    correct: [0, 3]
-  },
-  {
-    question: "Una bicicleta tiene...",
-    note: "Seleccioná la opción correcta.",
-    options: ["2 ruedas", "Ruedas", "≥1 rueda", "Pedales (generalmente)"],
-    correct: [0] // pero todas son técnicamente correctas
-  },
-  {
-    question: "¿Qué es el agua?",
-    note: "Elegí la mejor respuesta.",
-    options: ["Un líquido", "H₂O", "Húmeda", "Sí"],
-    correct: [1] // cualquier respuesta lógica es marcada mal
-  },
-  {
-    question: "¿Cuál de estos números es mayor que 3?",
-    note: "Seleccioná todas las que apliquen.",
-    options: ["4", "3.1", "3,0001", "π"],
-    correct: [0, 1, 2, 3] // si no los seleccionás todos, falla
-  }
-]
-```
+El visitante llega directamente a un captcha. Al completarlo:
+1. `onDone()` se llama desde el captcha
+2. `CaptchaRouter` activa el spinner "Verificando..." durante 1.5 segundos
+3. `nextCaptcha()` carga el siguiente tipo del pool
+4. Se repite indefinidamente
+
+El sistema **siempre acepta** cualquier respuesta. No hay mensajes de error. No hay validación. El captcha es teatro.
 
 ---
 
-## Desenlaces (data/endings.js)
+## Captchas disponibles
 
-```js
-export const endings = [
-  {
-    id: "machine",
-    icon: "🤖",
-    title: "Verificación fallida",
-    body: "Su comportamiento no coincide con patrones humanos conocidos. Esta sesión ha sido registrada. Acceso denegado de forma permanente.",
-    glitch: false,
-  },
-  {
-    id: "reserved",
-    icon: "🔒",
-    title: "Acceso restringido",
-    body: "Esta sección está reservada para sistemas automatizados. Los usuarios humanos no están autorizados a continuar en este entorno.",
-    glitch: false,
-  },
-  {
-    id: "error",
-    icon: "⚠",
-    title: "ERR_VERIFICATION_LOOP_0x4F2",
-    body: "undefined is not a function\nnull\n[object Object]\nReintentando en 3... 2... 1...",
-    glitch: true,
-    autoRestart: true,
-    autoRestartDelay: 4000,
-  }
-]
-```
+El pool vive en `useFlowStore.js` como `CAPTCHA_TYPES`. Agregar un captcha nuevo requiere:
+1. Crear el componente en `src/screens/captchas/`
+2. Sumar el identificador a `CAPTCHA_TYPES` en el store
+3. Registrarlo en `CAPTCHA_COMPONENTS` en `CaptchaRouter.jsx`
+
+### Tipos actuales
+
+| ID | Componente | Comportamiento |
+|----|-----------|----------------|
+| `checkbox` | CheckboxCaptcha | Checkbox "No soy un robot". Gira mientras verifica, luego llama `onDone`. |
+| `image` | ImageCaptcha | Grilla 3×3 de emojis con pregunta ambigua. `Verificar` llama `onDone` sin importar la selección. |
+| `absurd` | AbsurdCaptcha | Pregunta lógica con opciones absurdas. `Verificar` (con cualquier selección) llama `onDone`. |
+| `distorted` | DistortedTextCaptcha | Texto distorsionado para transcribir. Cualquier texto válido llama `onDone`. |
+| `tos` | TosCaptcha | Términos y condiciones que crecen al scrollear. El botón se habilita al llegar al final. |
 
 ---
 
-## Notas de diseño
+## Sistema de estéticas
 
-- La estética inicial debe imitar **Cloudflare / reCAPTCHA de Google**: fondo gris claro, card blanca centrada, tipografía Roboto o similar, azul #4285f4 como color primario, bordes sutiles.
-- A medida que sube la degradación, la app "colapsa" hacia algo roto, monoespaciado, hostil.
-- **Nunca usar librerías de componentes UI** (MUI, shadcn, etc.). Todo CSS propio para tener control total de la degradación.
-- El texto de los términos y condiciones debe ser largo y real (no lorem ipsum). Debe mencionar explícitamente el uso de datos para entrenamiento de IA.
-- La app debe funcionar bien en **mobile** (el QR se escanea con el teléfono).
-- No hay rutas reales. Todo es un estado en el store. Usar React Router solo si facilita el historial del navegador para evitar que el botón "atrás" rompa el flujo.
+La app soporta tres estéticas visuales intercambiables. La selección se persiste en localStorage (única excepción a la regla de "no localStorage") y se aplica vía CSS variables + atributo `data-theme` en el root.
+
+### Estéticas disponibles
+
+| ID | Label | Default | Chrome | Fondo | Efectos |
+|----|-------|---------|--------|-------|---------|
+| `classic` | reCAPTCHA clásico | ✓ | No | Gris claro (#f0f2f5) | Ninguno |
+| `matrix` | Matrix | | Sí (tease + QR finders + footer) | QR grid + canvas rain | Scanlines, glitch |
+| `darktech` | Dark Tech | | No | Oscuro (#111318) | Ninguno |
+
+### Arquitectura
+
+- **`themes.js`**: define CSS variables, flags (`showChrome`, `hasMatrixRain`, `hasScanlines`, `hasGlitch`) y funciones `applyTheme()`/`storeTheme()`. Ejecuta `applyTheme()` como side-effect al importarse.
+- **`base.css`**: declara defaults (classic) en `:root`. Efectos visuales (scanlines, glitch, QR grid) condicionados a `[data-theme="matrix"]`.
+- **`Layout.jsx`**: lee `useThemeStore` para decidir si renderiza chrome completo (matrix) o layout limpio (classic/darktech).
+- **`MatrixRain.jsx`**: canvas JS con lluvia de caracteres. Solo se monta cuando la estética es `matrix`.
+- **`DocsPage.jsx`**: selector compacto en el header permite cambiar la estética.
+
+### CSS variables por estética
+
+Los componentes usan `var(--xxx)` para colores, fuentes y bordes. Glows y sombras usan `rgba(var(--primary-rgb), opacity)` para adaptarse automáticamente.
+
+Variables clave: `--color-primary`, `--bg`, `--card-bg`, `--text-main`, `--text-secondary`, `--border`, `--font-main`, `--font-mono`, `--border-radius`, `--card-shadow`, `--primary-rgb`, `--error-rgb`.
+
+### Cambiar la estética
+
+Desde `/docs`: usar el selector en el header.
+Por código: `useThemeStore.getState().setTheme('matrix')`.
+
+---
+
+## Tease ambiental (solo estética matrix)
+
+Texto estático visible en el header de la interfaz cuando la estética es `matrix`:
+
+> **Resuelva el captcha para acceder**
+
+No cambia. No avanza. No guía. La referencia a la caja es implícita y permanente.
+
+Las estéticas `classic` y `darktech` muestran solo la card centrada, sin chrome.
 
 ---
 
 ## Lo que NO hacer
 
-- No enviar mails reales.
-- No usar ninguna API externa.
-- No usar `localStorage` para persistir estado (cada visita es nueva).
-- No poner lógica de negocio en los componentes. Todo en el store o en los archivos de data.
-- No hacer la interfaz "linda" en niveles altos de degradación. Tiene que sentirse rota.
+- No mostrar mensajes de error en los captchas. El sistema siempre acepta.
+- No agregar barras de progreso, contadores, ni ningún indicador de avance.
+- No usar `localStorage` excepto para la estética visual (ver ADR 0002).
+- No usar APIs externas ni enviar datos reales.
+- No usar librerías de componentes UI (MUI, shadcn, etc.).
+- No agregar lógica de negocio en los componentes. Todo en el store o en los archivos de data.
+- No reactivar el sistema de degradación sin decisión explícita — `degradation.css` está inactivo.
+- No cambiar textos ni lógica de captchas según la estética activa. Las estéticas solo afectan lo visual.
