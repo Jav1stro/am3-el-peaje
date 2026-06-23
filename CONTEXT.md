@@ -53,4 +53,11 @@ Los QR son decorativos, no funcionales. No existe un tipo de captcha que pida es
 
 ## Captcha
 
-Un paso de verificación presentado al visitante. Tiene una interacción (hacer clic, seleccionar, escribir, scrollear) y un botón o acción que llama `onDone()`. El sistema no evalúa si la respuesta es correcta. Todos los captchas terminan igual: el sistema acepta y carga el siguiente.
+Un paso de verificación presentado al visitante. Tiene una interacción (hacer clic, seleccionar, escribir, scrollear, suspirar) y un botón o acción que llama `onDone()`. El sistema no evalúa si la respuesta es correcta. Todos los captchas terminan igual: el sistema acepta y carga el siguiente. Excepción: un captcha puede incluir un **rechazo teatral** antes de aceptar (ver término propio).
+
+---
+
+## Rechazo teatral
+
+Un falso rechazo dentro de un **captcha** que finge evaluar la respuesta del visitante y devuelve un mensaje de error. No es validación real — el sistema no mide ni compara nada. El rechazo es parte del teatro: obliga al visitante a repetir una acción corporal o afectiva sabiendo que es absurda. Después del rechazo, el siguiente intento siempre es aceptado y se llama `onDone()`.
+_Evitar_: error, fallo, validación fallida

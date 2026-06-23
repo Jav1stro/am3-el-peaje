@@ -8,6 +8,7 @@ import ImageCaptcha from './captchas/ImageCaptcha'
 import AbsurdCaptcha from './captchas/AbsurdCaptcha'
 import DistortedTextCaptcha from './captchas/DistortedTextCaptcha'
 import TosCaptcha from './captchas/TosCaptcha'
+import MicrophoneCaptcha from './captchas/MicrophoneCaptcha'
 
 const CAPTCHA_COMPONENTS = {
   checkbox: CheckboxCaptcha,
@@ -15,6 +16,7 @@ const CAPTCHA_COMPONENTS = {
   absurd: AbsurdCaptcha,
   distorted: DistortedTextCaptcha,
   tos: TosCaptcha,
+  microphone: MicrophoneCaptcha,
 }
 
 function CaptchaDemo({ type }) {
@@ -99,11 +101,16 @@ function CollapsibleCard({ index, type, meta }) {
   const [height, setHeight] = useState(0)
 
   useEffect(() => {
-    if (open && contentRef.current) {
-      setHeight(contentRef.current.scrollHeight)
-    } else {
+    if (!open || !contentRef.current) {
       setHeight(0)
+      return
     }
+    setHeight(contentRef.current.scrollHeight)
+    const observer = new ResizeObserver(() => {
+      if (contentRef.current) setHeight(contentRef.current.scrollHeight)
+    })
+    observer.observe(contentRef.current)
+    return () => observer.disconnect()
   }, [open])
 
   return (

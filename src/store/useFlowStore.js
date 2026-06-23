@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export const CAPTCHA_TYPES = ['checkbox', 'image', 'absurd', 'distorted', 'tos']
+export const CAPTCHA_TYPES = ['checkbox', 'image', 'absurd', 'distorted', 'tos', 'microphone']
 
 function shuffled(avoidFirst = null) {
   const arr = [...CAPTCHA_TYPES]

@@ -27,7 +27,8 @@ el-peaje/
 ├── CONTEXT.md                         # Glosario de dominio
 ├── docs/adr/
 │   ├── 0001-loop-infinito.md          # Decisión: loop vs flujo lineal
-│   └── 0002-esteticas-intercambiables.md # Decisión: sistema de estéticas
+│   ├── 0002-esteticas-intercambiables.md # Decisión: sistema de estéticas
+│   └── 0003-rechazo-teatral.md        # Decisión: excepción al "siempre acepta"
 ├── index.html
 ├── package.json
 ├── vite.config.js
@@ -56,7 +57,8 @@ el-peaje/
 │           ├── ImageCaptcha.jsx
 │           ├── AbsurdCaptcha.jsx
 │           ├── DistortedTextCaptcha.jsx
-│           └── TosCaptcha.jsx
+│           ├── TosCaptcha.jsx
+│           └── MicrophoneCaptcha.jsx
 ```
 
 ---
@@ -120,6 +122,7 @@ El pool vive en `useFlowStore.js` como `CAPTCHA_TYPES`. Agregar un captcha nuevo
 | `absurd` | AbsurdCaptcha | Pregunta lógica con opciones absurdas. `Verificar` (con cualquier selección) llama `onDone`. |
 | `distorted` | DistortedTextCaptcha | Texto distorsionado para transcribir. Cualquier texto válido llama `onDone`. |
 | `tos` | TosCaptcha | Términos y condiciones que crecen al scrollear. El botón se habilita al llegar al final. |
+| `microphone` | MicrophoneCaptcha | Pide activar micrófono y suspirar. Graba 5s con ondas reactivas, analiza con métricas fake, rechaza el primer intento (rechazo teatral, ver ADR 0003). Acepta el segundo. |
 
 ---
 

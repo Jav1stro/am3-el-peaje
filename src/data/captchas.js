@@ -19,6 +19,10 @@ export const captchaMeta = {
     label: 'Términos y condiciones',
     description: 'Un documento legal interminable que crece al hacer scroll: al llegar al final, aparece una Adenda I, luego una Adenda II. El botón "Acepto" solo se habilita tras scrollear todo el contenido.',
   },
+  microphone: {
+    label: 'Validación biométrica',
+    description: 'El sistema pide activar el micrófono y emitir un suspiro de resignación. Graba 5 segundos con visualización de ondas reactiva, analiza con métricas pseudocientíficas, y rechaza el primer intento con un mensaje absurdo. El segundo intento siempre es aceptado.',
+  },
 }
 
 export const captchas = {
@@ -323,6 +327,26 @@ ARTÍCULO 5: CLÁUSULAS TÉCNICAS COMPLEMENTARIAS
 5.4. Ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis.
 
 5.5. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.`,
+
+  microphone: {
+    title: 'Validación biométrica afectiva',
+    instruction: 'Emita un suspiro de resignación frente al micrófono. Imagine que necesita el agua.',
+    permissionDenied: 'Permiso de micrófono denegado. La verificación biométrica afectiva requiere acceso al dispositivo de captura de audio. Sin este permiso, no es posible continuar con el proceso de validación.',
+    rejections: [
+      'Insuficiente derrota detectada. Su suspiro debe registrar al menos -12dB de melancolía existencial para demostrar humanidad.',
+      'Patrón afectivo no reconocido. El sistema requiere un mínimo de 3.2 unidades de resignación corporal verificable.',
+      'Firma biométrica incompleta. La muestra no alcanza el umbral de desesperanza requerido por el protocolo de validación afectiva.',
+      'Coeficiente de derrota sistémica insuficiente. Se requiere una expresión de cansancio existencial más definida para completar la verificación.',
+    ],
+    metrics: [
+      'Melancolía existencial',
+      'Resignación corporal',
+      'Derrota sistémica',
+      'Cansancio burocrático',
+    ],
+    recordingLabel: 'Grabando muestra biométrica…',
+    analyzingLabel: 'Analizando perfil biométrico afectivo…',
+  },
 
   tosAddendum2: `ADENDA II — CLÁUSULAS ESPECIALES PARA USUARIOS QUE HAN LLEGADO HASTA AQUÍ
 
