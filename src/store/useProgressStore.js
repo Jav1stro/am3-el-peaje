@@ -11,9 +11,13 @@ export const useProgressStore = create((set, get) => ({
   totalFails: 0,
   showEnding: false,
 
-  recordCaptchaResult: (captchaType) => {
-    const { totalFails, ceilingHits, percent } = get()
-    const result = captchaType === 'tos' || totalFails >= PROGRESS.MAX_FAILS ? 'pass' : decideResult()
+  decideCaptchaResult: (captchaType) => {
+    const { totalFails } = get()
+    return captchaType === 'tos' || totalFails >= PROGRESS.MAX_FAILS ? 'pass' : decideResult()
+  },
+
+  applyCaptchaResult: (result) => {
+    const { ceilingHits, percent, totalFails } = get()
     const newFails = result === 'fail' ? totalFails + 1 : totalFails
     const inFinalPhase = ceilingHits > 0
 
@@ -25,7 +29,6 @@ export const useProgressStore = create((set, get) => ({
         hits = ceilingHits + 1
         newPercent = computeFinalPhasePercent(hits)
       }
-      // fails dentro de la fase final no restan: el progreso nunca baja una vez en los decimales
     } else {
       newPercent = applyResult(percent, result)
       if (result === 'pass' && newPercent >= PROGRESS.CEILING_THRESHOLD) {
@@ -39,7 +42,6 @@ export const useProgressStore = create((set, get) => ({
     } else {
       set({ percent: newPercent, lastResult: result, ceilingHits: hits, totalFails: newFails })
     }
-    return result
   },
 
   resetAll: () => set({ percent: 0, ceilingHits: 0, totalFails: 0, showEnding: false, lastResult: null, showJoinAlert: false }),

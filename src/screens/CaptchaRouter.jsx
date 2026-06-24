@@ -167,7 +167,8 @@ export default function CaptchaRouter() {
   const isVerifying = useFlowStore((s) => s.isVerifying)
   const setVerifying = useFlowStore((s) => s.setVerifying)
   const nextCaptcha = useFlowStore((s) => s.nextCaptcha)
-  const recordCaptchaResult = useProgressStore((s) => s.recordCaptchaResult)
+  const decideCaptchaResult = useProgressStore((s) => s.decideCaptchaResult)
+  const applyCaptchaResult = useProgressStore((s) => s.applyCaptchaResult)
   const showEnding = useProgressStore((s) => s.showEnding)
   const resetAll = useProgressStore((s) => s.resetAll)
   const [failed, setFailed] = useState(false)
@@ -176,10 +177,11 @@ export default function CaptchaRouter() {
   const endingTimerRef = useRef(null)
 
   function handleCaptchaDone(captchaType) {
-    const result = recordCaptchaResult(captchaType)
+    const result = decideCaptchaResult(captchaType)
     setVerifying(true)
 
     timerRef.current = setTimeout(() => {
+      applyCaptchaResult(result)
       if (result === 'fail') {
         setFailed(true)
         failTimerRef.current = setTimeout(() => {

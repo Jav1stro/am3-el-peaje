@@ -97,7 +97,7 @@ export default function ProgressIndicator() {
                 opacity: 0.7,
               }}
             >
-              En fila · {connectedVisitors.length + 1}
+              En fila · {connectedVisitors.length}
             </div>
             {connectedVisitors.map((v) => (
               <div

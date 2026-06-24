@@ -20,6 +20,25 @@ export default function App() {
       {theme.hasMatrixRain && <MatrixRain />}
       <ProgressIndicator />
       <CaptchaRouter />
+      <a
+        href="/docs"
+        style={{
+          position: 'fixed',
+          bottom: '12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '9px',
+          fontFamily: 'var(--font-mono)',
+          color: 'var(--text-secondary)',
+          textDecoration: 'none',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          opacity: 0.6,
+          zIndex: 10,
+        }}
+      >
+        Documentación
+      </a>
     </>
   )
 }
