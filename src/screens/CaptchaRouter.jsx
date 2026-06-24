@@ -66,6 +66,52 @@ function VerifyingSpinner() {
   )
 }
 
+function EndingMessage() {
+  return (
+    <Layout>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '48px 0',
+          gap: '16px',
+        }}
+      >
+        <div
+          style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            border: '3px solid var(--color-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px',
+            color: 'var(--color-primary)',
+            fontWeight: 700,
+          }}
+        >
+          ✓
+        </div>
+        <p
+          style={{
+            margin: 0,
+            fontSize: '13px',
+            color: 'var(--text-main)',
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.04em',
+            textAlign: 'center',
+          }}
+        >
+          {PROGRESS.ENDING_MESSAGE}
+        </p>
+      </div>
+    </Layout>
+  )
+}
+
 function FailedMessage() {
   return (
     <Layout>
@@ -119,9 +165,12 @@ export default function CaptchaRouter() {
   const setVerifying = useFlowStore((s) => s.setVerifying)
   const nextCaptcha = useFlowStore((s) => s.nextCaptcha)
   const recordCaptchaResult = useProgressStore((s) => s.recordCaptchaResult)
+  const showEnding = useProgressStore((s) => s.showEnding)
+  const resetAll = useProgressStore((s) => s.resetAll)
   const [failed, setFailed] = useState(false)
   const timerRef = useRef(null)
   const failTimerRef = useRef(null)
+  const endingTimerRef = useRef(null)
 
   function handleCaptchaDone() {
     const result = recordCaptchaResult()
@@ -140,19 +189,62 @@ export default function CaptchaRouter() {
     }, 1500)
   }
 
+  useEffect(() => {
+    if (!showEnding) return
+
+    endingTimerRef.current = setTimeout(() => {
+      setFailed(false)
+      resetAll()
+      nextCaptcha()
+    }, 4000)
+
+    return () => clearTimeout(endingTimerRef.current)
+  }, [showEnding])
+
+  const idleTimerRef = useRef(null)
+
+  function resetIdleTimer() {
+    clearTimeout(idleTimerRef.current)
+    idleTimerRef.current = setTimeout(() => {
+      setFailed(false)
+      resetAll()
+      nextCaptcha()
+    }, PROGRESS.IDLE_TIMEOUT)
+  }
+
+  useEffect(() => {
+    const events = ['pointerdown', 'keydown', 'scroll', 'touchstart']
+    const handler = () => resetIdleTimer()
+    events.forEach((e) => window.addEventListener(e, handler, { passive: true }))
+    resetIdleTimer()
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, handler))
+      clearTimeout(idleTimerRef.current)
+    }
+  }, [])
+
   useEffect(() => () => {
     clearTimeout(timerRef.current)
     clearTimeout(failTimerRef.current)
+    clearTimeout(endingTimerRef.current)
   }, [])
 
   const currentType = pool[poolIndex]
   const CaptchaComponent = CAPTCHA_COMPONENTS[currentType]
-  const animKey = failed ? 'failed' : isVerifying ? 'verifying' : `${currentType}-${poolIndex}`
+  const animKey = showEnding
+    ? 'ending'
+    : failed
+      ? 'failed'
+      : isVerifying
+        ? 'verifying'
+        : `${currentType}-${poolIndex}`
 
   return (
     <AnimatePresence mode="wait">
       <motion.div key={animKey} {...fade} style={{ width: '100%' }}>
-        {failed ? (
+        {showEnding ? (
+          <EndingMessage />
+        ) : failed ? (
           <FailedMessage />
         ) : isVerifying ? (
           <VerifyingSpinner />

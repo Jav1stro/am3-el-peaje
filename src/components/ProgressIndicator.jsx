@@ -1,8 +1,20 @@
+import { useEffect, useRef } from 'react'
 import { useProgressStore } from '../store/useProgressStore'
+import { PROGRESS } from '../data/progressConfig'
 
 export default function ProgressIndicator() {
   const percent = useProgressStore((s) => s.percent)
   const connectedVisitors = useProgressStore((s) => s.connectedVisitors)
+  const showJoinAlert = useProgressStore((s) => s.showJoinAlert)
+  const clearJoinAlert = useProgressStore((s) => s.clearJoinAlert)
+  const alertTimerRef = useRef(null)
+
+  useEffect(() => {
+    if (!showJoinAlert) return
+    clearTimeout(alertTimerRef.current)
+    alertTimerRef.current = setTimeout(clearJoinAlert, 3000)
+    return () => clearTimeout(alertTimerRef.current)
+  }, [showJoinAlert])
 
   return (
     <div
@@ -54,6 +66,25 @@ export default function ProgressIndicator() {
             }}
           />
         </div>
+
+        {showJoinAlert && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: '6px 10px',
+              fontSize: '10px',
+              letterSpacing: '0.04em',
+              color: 'var(--color-error)',
+              backgroundColor: 'var(--error-bg)',
+              border: '1px solid var(--color-error)',
+              borderRadius: 'var(--border-radius)',
+              textAlign: 'center',
+              animation: 'fadeInAddendum 0.3s ease-out',
+            }}
+          >
+            Nuevo visitante en la fila · Progreso −{PROGRESS.JOIN_PENALTY}%
+          </div>
+        )}
 
         {connectedVisitors.length > 0 && (
           <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 6 }}>

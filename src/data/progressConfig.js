@@ -6,4 +6,9 @@ export const PROGRESS = {
   CEILING: 99.999,
   FLOOR: 0,
   FAIL_MESSAGE: 'Verificación fallida',
+  MAX_FAILS: 7,
+  CEILING_THRESHOLD: 99,
+  CEILING_HITS_FOR_ENDING: 3,
+  ENDING_MESSAGE: 'Verificación completa. Intente de nuevo.',
+  IDLE_TIMEOUT: 45000,
 }
