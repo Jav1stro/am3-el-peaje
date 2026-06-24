@@ -17,7 +17,14 @@ _Evitar_: instrucción, prompt, mensaje de bienvenida
 
 ## Paso aceptado
 
-Lo que ocurre cuando el visitante completa un captcha. El sistema siempre acepta la respuesta —correcta o incorrecta— muestra un spinner breve ("Verificando...", 1–2 segundos) y carga el siguiente captcha sin comentario. No hay mensaje de error. No hay mensaje de éxito. No hay validación. El captcha es teatro.
+Uno de los dos resultados posibles cuando el visitante completa un captcha (60% de probabilidad por defecto). El sistema muestra un spinner breve ("Verificando...", 1–2 segundos) y carga el siguiente captcha sin comentario. No hay mensaje de éxito. El captcha es teatro.
+
+---
+
+## Fallo parametrizado
+
+El otro resultado posible al completar un captcha (40% de probabilidad por defecto). El sistema muestra "Verificando..." y luego declara *"Verificación fallida"* antes de cargar el siguiente captcha. No hay evaluación real — el sistema no mide la respuesta del visitante. El fallo es arbitrario, decidido por probabilidad configurable. A diferencia del **rechazo teatral** (que ocurre *dentro* de un captcha y obliga a reintentar), el fallo parametrizado ocurre *a nivel de flujo* y no ofrece segundo intento: el sistema informa, castiga y sigue.
+_Evitar_: error, rechazo, validación
 
 ---
 
@@ -53,11 +60,21 @@ Los QR son decorativos, no funcionales. No existe un tipo de captcha que pida es
 
 ## Captcha
 
-Un paso de verificación presentado al visitante. Tiene una interacción (hacer clic, seleccionar, escribir, scrollear, suspirar) y un botón o acción que llama `onDone()`. El sistema no evalúa si la respuesta es correcta. Todos los captchas terminan igual: el sistema acepta y carga el siguiente. Excepción: un captcha puede incluir un **rechazo teatral** antes de aceptar (ver término propio).
+Un paso de verificación presentado al visitante. Tiene una interacción (hacer clic, seleccionar, escribir, scrollear, suspirar) y un botón o acción que llama `onDone()`. El sistema no evalúa si la respuesta es correcta. Al completarse, el captcha puede resultar en un **paso aceptado** o un **fallo parametrizado** — decidido por probabilidad, no por la respuesta del visitante.
 
 ---
 
-## Rechazo teatral
+## Progreso
 
-Un falso rechazo dentro de un **captcha** que finge evaluar la respuesta del visitante y devuelve un mensaje de error. No es validación real — el sistema no mide ni compara nada. El rechazo es parte del teatro: obliga al visitante a repetir una acción corporal o afectiva sabiendo que es absurda. Después del rechazo, el siguiente intento siempre es aceptado y se llama `onDone()`.
-_Evitar_: error, fallo, validación fallida
+Indicador numérico (porcentaje) visible para el visitante que representa su avance en el proceso de verificación. Sube con cada **paso aceptado** (+15 puntos por defecto) y baja con cada **fallo parametrizado** (−20 puntos por defecto). Nunca llega a 100%. El visitante lo ve como su progreso real; el sistema lo usa como una promesa que no se cumple.
+_Evitar_: barra de carga, porcentaje de completado, score
+
+---
+
+## Fila
+
+El conjunto de visitantes conectados simultáneamente. Cuando un nuevo visitante entra a la fila, el **progreso** de todos los demás disminuye (−30 puntos por defecto). Cada visitante ve cuántos otros hay en la fila y su progreso. La fila amplifica la metáfora burocrática: más gente esperando, menos avanzás.
+_Evitar_: sala, room, lobby, cola
+
+---
+
