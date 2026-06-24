@@ -23,6 +23,10 @@ export const captchaMeta = {
     label: 'Validación biométrica',
     description: 'El sistema pide activar el micrófono y emitir un suspiro de resignación. Graba 5 segundos con visualización de ondas reactiva, analiza con métricas pseudocientíficas, y rechaza el primer intento con un mensaje absurdo. El segundo intento siempre es aceptado.',
   },
+  security: {
+    label: 'Preguntas de seguridad',
+    description: 'El formato bancario de "preguntas de seguridad" (nombre de mascota, ciudad de nacimiento) llevado a un terreno de extracción de datos personales: situación fiscal, estado civil, endeudamiento. Mezcla preguntas de texto libre y de opción múltiple. Cualquier respuesta es aceptada.',
+  },
 }
 
 export const captchas = {
@@ -347,6 +351,38 @@ ARTÍCULO 5: CLÁUSULAS TÉCNICAS COMPLEMENTARIAS
     recordingLabel: 'Grabando muestra biométrica…',
     analyzingLabel: 'Analizando perfil biométrico afectivo…',
   },
+
+  security: [
+    {
+      type: 'text',
+      question: 'Último nombre de su perro',
+    },
+    {
+      type: 'choice',
+      question: 'Situación fiscal actual',
+      options: ['Monotributo', 'Responsable inscripto', 'No sabe', 'Prefiere no decir'],
+    },
+    {
+      type: 'choice',
+      question: 'Estado civil',
+      options: ['Casado/a', 'Soltero/a', 'Situación indefinida', 'Hay alguien, pero no estoy seguro'],
+    },
+    {
+      type: 'choice',
+      question: 'Su necesidad de continuar, ¿viene de afuera o de usted mismo?',
+      options: ['De afuera', 'De mí mismo', 'Ya no hay diferencia', 'Prefiero no pensarlo'],
+    },
+    {
+      type: 'choice',
+      question: 'Situación habitacional',
+      options: ['Propietario', 'Inquilino', 'Vive con la incertidumbre', 'No corresponde'],
+    },
+    {
+      type: 'choice',
+      question: 'Nivel de endeudamiento percibido',
+      options: ['Ninguno', 'Manejable', 'No quiero pensarlo', 'Estructural'],
+    },
+  ],
 
   tosAddendum2: `ADENDA II — CLÁUSULAS ESPECIALES PARA USUARIOS QUE HAN LLEGADO HASTA AQUÍ
 

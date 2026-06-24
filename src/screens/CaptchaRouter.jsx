@@ -10,6 +10,7 @@ import AbsurdCaptcha from './captchas/AbsurdCaptcha'
 import DistortedTextCaptcha from './captchas/DistortedTextCaptcha'
 import TosCaptcha from './captchas/TosCaptcha'
 import MicrophoneCaptcha from './captchas/MicrophoneCaptcha'
+import SecurityQuestionCaptcha from './captchas/SecurityQuestionCaptcha'
 
 const CAPTCHA_COMPONENTS = {
   checkbox: CheckboxCaptcha,
@@ -18,6 +19,7 @@ const CAPTCHA_COMPONENTS = {
   distorted: DistortedTextCaptcha,
   tos: TosCaptcha,
   microphone: MicrophoneCaptcha,
+  security: SecurityQuestionCaptcha,
 }
 
 const fade = {
