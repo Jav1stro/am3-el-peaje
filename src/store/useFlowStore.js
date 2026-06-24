@@ -17,16 +17,17 @@ function shuffled(avoidFirst = null) {
 export const useFlowStore = create((set) => ({
   pool: shuffled(),
   poolIndex: 0,
+  seq: 0,
   isVerifying: false,
 
   nextCaptcha: () =>
     set((state) => {
       const nextIndex = state.poolIndex + 1
       if (nextIndex < state.pool.length) {
-        return { poolIndex: nextIndex, isVerifying: false }
+        return { poolIndex: nextIndex, seq: state.seq + 1, isVerifying: false }
       }
       const lastType = state.pool[state.pool.length - 1]
-      return { pool: shuffled(lastType), poolIndex: 0, isVerifying: false }
+      return { pool: shuffled(lastType), poolIndex: 0, seq: state.seq + 1, isVerifying: false }
     }),
 
   setVerifying: (v) => set({ isVerifying: v }),

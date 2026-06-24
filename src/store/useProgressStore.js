@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { decideResult, applyResult, applyJoinPenalty } from '../data/progressLogic'
+import { decideResult, applyResult, applyJoinPenalty, computeFinalPhasePercent } from '../data/progressLogic'
 import { PROGRESS } from '../data/progressConfig'
 
 export const useProgressStore = create((set, get) => ({
@@ -11,14 +11,28 @@ export const useProgressStore = create((set, get) => ({
   totalFails: 0,
   showEnding: false,
 
-  recordCaptchaResult: () => {
-    const { totalFails } = get()
-    const result = totalFails >= PROGRESS.MAX_FAILS ? 'pass' : decideResult()
-    const newPercent = applyResult(get().percent, result)
+  recordCaptchaResult: (captchaType) => {
+    const { totalFails, ceilingHits, percent } = get()
+    const result = captchaType === 'tos' || totalFails >= PROGRESS.MAX_FAILS ? 'pass' : decideResult()
     const newFails = result === 'fail' ? totalFails + 1 : totalFails
-    const hits = newPercent >= PROGRESS.CEILING_THRESHOLD
-      ? get().ceilingHits + 1
-      : get().ceilingHits
+    const inFinalPhase = ceilingHits > 0
+
+    let newPercent = percent
+    let hits = ceilingHits
+
+    if (inFinalPhase) {
+      if (result === 'pass') {
+        hits = ceilingHits + 1
+        newPercent = computeFinalPhasePercent(hits)
+      }
+      // fails dentro de la fase final no restan: el progreso nunca baja una vez en los decimales
+    } else {
+      newPercent = applyResult(percent, result)
+      if (result === 'pass' && newPercent >= PROGRESS.CEILING_THRESHOLD) {
+        hits = 1
+        newPercent = computeFinalPhasePercent(hits)
+      }
+    }
 
     if (hits >= PROGRESS.CEILING_HITS_FOR_ENDING) {
       set({ percent: newPercent, lastResult: result, ceilingHits: hits, totalFails: newFails, showEnding: true })

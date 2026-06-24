@@ -161,6 +161,7 @@ function FailedMessage() {
 export default function CaptchaRouter() {
   const pool = useFlowStore((s) => s.pool)
   const poolIndex = useFlowStore((s) => s.poolIndex)
+  const seq = useFlowStore((s) => s.seq)
   const isVerifying = useFlowStore((s) => s.isVerifying)
   const setVerifying = useFlowStore((s) => s.setVerifying)
   const nextCaptcha = useFlowStore((s) => s.nextCaptcha)
@@ -172,8 +173,8 @@ export default function CaptchaRouter() {
   const failTimerRef = useRef(null)
   const endingTimerRef = useRef(null)
 
-  function handleCaptchaDone() {
-    const result = recordCaptchaResult()
+  function handleCaptchaDone(captchaType) {
+    const result = recordCaptchaResult(captchaType)
     setVerifying(true)
 
     timerRef.current = setTimeout(() => {
@@ -237,7 +238,7 @@ export default function CaptchaRouter() {
       ? 'failed'
       : isVerifying
         ? 'verifying'
-        : `${currentType}-${poolIndex}`
+        : `${currentType}-${seq}`
 
   return (
     <AnimatePresence mode="wait">
@@ -250,7 +251,9 @@ export default function CaptchaRouter() {
           <VerifyingSpinner />
         ) : (
           <Layout>
-            {CaptchaComponent && <CaptchaComponent onDone={handleCaptchaDone} />}
+            {CaptchaComponent && (
+              <CaptchaComponent onDone={() => handleCaptchaDone(currentType)} />
+            )}
           </Layout>
         )}
       </motion.div>

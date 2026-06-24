@@ -42,7 +42,7 @@ export default function ProgressIndicator() {
         >
           <span>Progreso</span>
           <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>
-            {Math.floor(percent)}%
+            {percent >= PROGRESS.CEILING_THRESHOLD ? percent.toFixed(3) : Math.floor(percent)}%
           </span>
         </div>
 

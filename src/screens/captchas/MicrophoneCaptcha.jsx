@@ -10,6 +10,10 @@ export default function MicrophoneCaptcha({ onDone }) {
   const [phase, setPhase] = useState('idle')
   const [countdown, setCountdown] = useState(RECORD_SECONDS)
   const [visibleMetrics, setVisibleMetrics] = useState([])
+  const [rejectionMessage, setRejectionMessage] = useState('')
+
+  const requiredAttemptsRef = useRef(Math.floor(Math.random() * 3) + 1)
+  const attemptRef = useRef(0)
 
   const canvasRef = useRef(null)
   const audioRef = useRef({ stream: null, ctx: null, analyser: null })
@@ -145,7 +149,14 @@ export default function MicrophoneCaptcha({ onDone }) {
 
     timers.push(
       setTimeout(() => {
-        onDoneRef.current()
+        attemptRef.current += 1
+        if (attemptRef.current < requiredAttemptsRef.current) {
+          const msg = d.rejections[Math.floor(Math.random() * d.rejections.length)]
+          setRejectionMessage(msg)
+          setPhase('rejected')
+        } else {
+          onDoneRef.current()
+        }
       }, ANALYZE_MS)
     )
 
@@ -271,6 +282,35 @@ export default function MicrophoneCaptcha({ onDone }) {
         >
           {countdown}
         </p>
+      </div>
+    )
+  }
+
+  if (phase === 'rejected') {
+    return (
+      <div>
+        <p
+          style={{
+            fontSize: '13px',
+            color: 'var(--text-main)',
+            marginBottom: '2px',
+            letterSpacing: '0.04em',
+          }}
+        >
+          {d.title}
+        </p>
+        <p
+          style={{
+            fontSize: '11px',
+            color: 'var(--color-error)',
+            marginBottom: '16px',
+            letterSpacing: '0.02em',
+            lineHeight: '1.6',
+          }}
+        >
+          {rejectionMessage}
+        </p>
+        <DegradedButton onClick={handleActivate}>Reintentar</DegradedButton>
       </div>
     )
   }

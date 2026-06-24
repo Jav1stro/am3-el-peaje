@@ -8,7 +8,7 @@ export const PROGRESS = {
   FAIL_MESSAGE: 'Verificación fallida',
   MAX_FAILS: 7,
   CEILING_THRESHOLD: 99,
-  CEILING_HITS_FOR_ENDING: 3,
-  ENDING_MESSAGE: 'Verificación completa. Intente de nuevo.',
+  CEILING_HITS_FOR_ENDING: 8,
+  ENDING_MESSAGE: 'Verificación completa. Gracias por aportar a la base de datos de entrenamiento para IA. Intente nuevamente para abrir la caja.',
   IDLE_TIMEOUT: 45000,
 }
