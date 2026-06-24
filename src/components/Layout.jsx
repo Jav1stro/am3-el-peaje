@@ -117,6 +117,7 @@ function CleanLayout({ children }) {
       style={{
         minHeight: '100vh',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px 16px',

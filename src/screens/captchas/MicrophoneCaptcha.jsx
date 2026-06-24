@@ -14,13 +14,8 @@ export default function MicrophoneCaptcha({ onDone }) {
   const canvasRef = useRef(null)
   const audioRef = useRef({ stream: null, ctx: null, analyser: null })
   const rafRef = useRef(null)
-  const attemptRef = useRef(0)
   const onDoneRef = useRef(onDone)
   onDoneRef.current = onDone
-
-  const rejectionRef = useRef(
-    d.rejections[Math.floor(Math.random() * d.rejections.length)]
-  )
 
   useEffect(() => () => stopAudio(), [])
 
@@ -132,12 +127,9 @@ export default function MicrophoneCaptcha({ onDone }) {
   useEffect(() => {
     if (phase !== 'analyzing') return
 
-    const pass = attemptRef.current > 0
     const metrics = d.metrics.map((label) => ({
       label,
-      value: pass
-        ? Math.floor(Math.random() * 25) + 72
-        : Math.floor(Math.random() * 30) + 8,
+      value: Math.floor(Math.random() * 25) + 72,
     }))
 
     setVisibleMetrics([])
@@ -153,12 +145,7 @@ export default function MicrophoneCaptcha({ onDone }) {
 
     timers.push(
       setTimeout(() => {
-        if (pass) {
-          onDoneRef.current()
-        } else {
-          attemptRef.current = 1
-          setPhase('rejected')
-        }
+        onDoneRef.current()
       }, ANALYZE_MS)
     )
 
@@ -367,35 +354,6 @@ export default function MicrophoneCaptcha({ onDone }) {
             </div>
           ))}
         </div>
-      </div>
-    )
-  }
-
-  if (phase === 'rejected') {
-    return (
-      <div>
-        <p
-          style={{
-            fontSize: '13px',
-            color: 'var(--text-main)',
-            marginBottom: '10px',
-            letterSpacing: '0.04em',
-          }}
-        >
-          {d.title}
-        </p>
-        <div
-          className="error-message"
-          style={{
-            padding: '14px',
-            marginBottom: '16px',
-            borderRadius: 'var(--border-radius)',
-            lineHeight: '1.7',
-          }}
-        >
-          {rejectionRef.current}
-        </div>
-        <DegradedButton onClick={handleActivate}>Reintentar</DegradedButton>
       </div>
     )
   }

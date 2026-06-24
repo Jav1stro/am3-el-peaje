@@ -15,7 +15,7 @@ El concepto central es el **captcha** como metáfora del sometimiento digital co
 - **CSS puro** para la estética y efectos visuales
 - **Framer Motion** solo para transiciones entre captchas
 - **Zustand** para estado global
-- Sin backend. Todo es frontend puro.
+- **Supabase Realtime** para presencia multiusuario (solo Presence, sin base de datos)
 
 ---
 
@@ -28,29 +28,39 @@ el-peaje/
 ├── docs/adr/
 │   ├── 0001-loop-infinito.md          # Decisión: loop vs flujo lineal
 │   ├── 0002-esteticas-intercambiables.md # Decisión: sistema de estéticas
-│   └── 0003-rechazo-teatral.md        # Decisión: excepción al "siempre acepta"
+│   ├── 0003-rechazo-teatral.md        # Superseded por 0004
+│   ├── 0004-fallo-parametrizado.md    # Decisión: fallo arbitrario configurable
+│   └── 0005-presencia-supabase.md     # Decisión: presencia multiusuario
 ├── index.html
 ├── package.json
 ├── vite.config.js
 ├── tailwind.config.js
 ├── src/
 │   ├── main.jsx
-│   ├── App.jsx                        # Renderiza CaptchaRouter + MatrixRain condicional
+│   ├── App.jsx                        # Renderiza CaptchaRouter + MatrixRain + ProgressIndicator
 │   ├── store/
 │   │   ├── useFlowStore.js            # pool, poolIndex, isVerifying
-│   │   └── useThemeStore.js           # themeId, setTheme
+│   │   ├── useThemeStore.js           # themeId, setTheme
+│   │   └── useProgressStore.js        # percent, visitorId, connectedVisitors
 │   ├── data/
 │   │   ├── captchas.js                # Datos de todos los captchas
-│   │   └── themes.js                  # Definiciones de las 3 estéticas + apply/store
+│   │   ├── themes.js                  # Definiciones de las 3 estéticas + apply/store
+│   │   ├── progressConfig.js          # Constantes configurables del progreso
+│   │   └── progressLogic.js           # Funciones puras: decideResult, applyResult, applyJoinPenalty
+│   ├── lib/
+│   │   └── supabase.js                # Cliente Supabase (null si no hay env vars)
+│   ├── hooks/
+│   │   └── usePresence.js             # Hook de presencia multiusuario via Supabase Realtime
 │   ├── styles/
 │   │   ├── base.css                   # CSS variables (default: classic), efectos condicionales por [data-theme]
 │   │   └── degradation.css            # Guardado para uso futuro (inactivo)
 │   ├── components/
 │   │   ├── Layout.jsx                 # Chrome condicional: solo matrix muestra tease + QR finders
 │   │   ├── DegradedButton.jsx         # Botón base (usa clase .btn-primary)
-│   │   └── MatrixRain.jsx             # Canvas con lluvia de caracteres (solo estética matrix)
+│   │   ├── MatrixRain.jsx             # Canvas con lluvia de caracteres (solo estética matrix)
+│   │   └── ProgressIndicator.jsx      # Indicador flotante de progreso + fila
 │   └── screens/
-│       ├── CaptchaRouter.jsx          # Loop infinito + spinner "Verificando..."
+│       ├── CaptchaRouter.jsx          # Loop infinito + fallo parametrizado + spinner
 │       ├── DocsPage.jsx               # Catálogo de captchas + selector de estética
 │       └── captchas/
 │           ├── CheckboxCaptcha.jsx
@@ -90,6 +100,37 @@ Acciones:
 Acciones:
 - `setTheme(id)` — persiste en localStorage, aplica CSS variables y actualiza el estado
 
+### useProgressStore
+
+```js
+{
+  percent: Number,             // progreso actual (0–99.999)
+  visitorId: String,           // UUID anónimo del visitante
+  lastResult: String | null,   // 'pass' | 'fail' | null
+  connectedVisitors: Array,    // [{ visitorId, percent }] — otros visitantes en la fila
+}
+```
+
+Acciones:
+- `recordCaptchaResult()` — decide pass/fail, aplica gain/loss, retorna el resultado
+- `applyJoinPenalty()` — resta puntos cuando entra un nuevo visitante a la fila
+- `setConnectedVisitors(list)` — actualiza la lista de otros visitantes
+- `resetLastResult()` — limpia el último resultado
+
+### Configuración del progreso
+
+`src/data/progressConfig.js` contiene las constantes configurables:
+
+| Constante | Default | Descripción |
+|-----------|---------|-------------|
+| `PASS_PROBABILITY` | 0.6 | Probabilidad de paso aceptado |
+| `PASS_POINTS` | 15 | Puntos sumados en paso aceptado |
+| `FAIL_POINTS` | 20 | Puntos restados en fallo parametrizado |
+| `JOIN_PENALTY` | 30 | Puntos restados cuando entra otro visitante |
+| `CEILING` | 99.999 | Techo duro del progreso |
+| `FLOOR` | 0 | Piso del progreso |
+| `FAIL_MESSAGE` | 'Verificación fallida' | Mensaje mostrado en fallo |
+
 ---
 
 ## Flujo
@@ -98,11 +139,13 @@ No hay flujo. La app no tiene inicio ni final.
 
 El visitante llega directamente a un captcha. Al completarlo:
 1. `onDone()` se llama desde el captcha
-2. `CaptchaRouter` activa el spinner "Verificando..." durante 1.5 segundos
-3. `nextCaptcha()` carga el siguiente tipo del pool
-4. Se repite indefinidamente
+2. `recordCaptchaResult()` decide si es paso aceptado (60%) o fallo parametrizado (40%)
+3. `CaptchaRouter` muestra el spinner "Verificando..." durante 1.5 segundos
+4. Si fue **paso aceptado**: carga el siguiente captcha (+15 puntos al progreso)
+5. Si fue **fallo parametrizado**: muestra "Verificación fallida" 2 segundos, luego carga el siguiente (−20 puntos)
+6. Se repite indefinidamente
 
-El sistema **siempre acepta** cualquier respuesta. No hay mensajes de error. No hay validación. El captcha es teatro.
+El sistema no evalúa la respuesta del visitante. El resultado es arbitrario, decidido por probabilidad configurable.
 
 ---
 
@@ -122,7 +165,7 @@ El pool vive en `useFlowStore.js` como `CAPTCHA_TYPES`. Agregar un captcha nuevo
 | `absurd` | AbsurdCaptcha | Pregunta lógica con opciones absurdas. `Verificar` (con cualquier selección) llama `onDone`. |
 | `distorted` | DistortedTextCaptcha | Texto distorsionado para transcribir. Cualquier texto válido llama `onDone`. |
 | `tos` | TosCaptcha | Términos y condiciones que crecen al scrollear. El botón se habilita al llegar al final. |
-| `microphone` | MicrophoneCaptcha | Pide activar micrófono y suspirar. Graba 5s con ondas reactivas, analiza con métricas fake, rechaza el primer intento (rechazo teatral, ver ADR 0003). Acepta el segundo. |
+| `microphone` | MicrophoneCaptcha | Pide activar micrófono y suspirar. Graba 5s con ondas reactivas, analiza con métricas fake, llama `onDone`. |
 
 ---
 
@@ -171,12 +214,32 @@ Las estéticas `classic` y `darktech` muestran solo la card centrada, sin chrome
 
 ---
 
+## Presencia multiusuario (Fila)
+
+La app usa **Supabase Realtime Presence** para sincronizar visitantes conectados. Cada visitante ve a los demás y su progreso. Cuando entra un nuevo visitante, los demás pierden 30 puntos (configurable).
+
+### Configuración
+
+Env vars (Vercel, no se commitean):
+- `VITE_SUPABASE_URL` — URL del proyecto Supabase
+- `VITE_SUPABASE_ANON_KEY` — Anon key pública
+
+Si las env vars no existen, la presencia se desactiva silenciosamente. El progreso funciona local sin fila.
+
+### Arquitectura
+
+- **`supabase.js`**: crea el cliente o exporta `null`.
+- **`usePresence.js`**: hook que se suscribe al canal `el-peaje:visitors`, maneja join/sync/leave.
+- **`ProgressIndicator.jsx`**: muestra el progreso propio y la fila de otros visitantes.
+
+---
+
 ## Lo que NO hacer
 
-- No mostrar mensajes de error en los captchas. El sistema siempre acepta.
-- No agregar barras de progreso, contadores, ni ningún indicador de avance.
+- No mostrar mensajes de error *dentro* de los captchas. Los captchas siempre llaman `onDone()`. El fallo parametrizado ocurre a nivel de flujo, no dentro del captcha.
+- No hacer que el progreso llegue a 100%.
 - No usar `localStorage` excepto para la estética visual (ver ADR 0002).
-- No usar APIs externas ni enviar datos reales.
+- No enviar datos reales del visitante a Supabase (solo visitorId anónimo y porcentaje).
 - No usar librerías de componentes UI (MUI, shadcn, etc.).
 - No agregar lógica de negocio en los componentes. Todo en el store o en los archivos de data.
 - No reactivar el sistema de degradación sin decisión explícita — `degradation.css` está inactivo.

@@ -1,0 +1,9 @@
+export const PROGRESS = {
+  PASS_PROBABILITY: 0.8,
+  PASS_POINTS: 15,
+  FAIL_POINTS: 20,
+  JOIN_PENALTY: 30,
+  CEILING: 99.999,
+  FLOOR: 0,
+  FAIL_MESSAGE: 'Verificación fallida',
+}

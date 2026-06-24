@@ -17,13 +17,13 @@ _Evitar_: instrucción, prompt, mensaje de bienvenida
 
 ## Paso aceptado
 
-Uno de los dos resultados posibles cuando el visitante completa un captcha (60% de probabilidad por defecto). El sistema muestra un spinner breve ("Verificando...", 1–2 segundos) y carga el siguiente captcha sin comentario. No hay mensaje de éxito. El captcha es teatro.
+Uno de los dos resultados posibles cuando el visitante completa un captcha. El sistema muestra un spinner breve ("Verificando...", 1–2 segundos) y carga el siguiente captcha sin comentario. No hay mensaje de éxito. El captcha es teatro. La probabilidad es configurable desde `progressConfig.js`.
 
 ---
 
 ## Fallo parametrizado
 
-El otro resultado posible al completar un captcha (40% de probabilidad por defecto). El sistema muestra "Verificando..." y luego declara *"Verificación fallida"* antes de cargar el siguiente captcha. No hay evaluación real — el sistema no mide la respuesta del visitante. El fallo es arbitrario, decidido por probabilidad configurable. A diferencia del **rechazo teatral** (que ocurre *dentro* de un captcha y obliga a reintentar), el fallo parametrizado ocurre *a nivel de flujo* y no ofrece segundo intento: el sistema informa, castiga y sigue.
+El otro resultado posible al completar un captcha. El sistema muestra "Verificando..." y luego declara *"Verificación fallida"* antes de cargar el siguiente captcha. No hay evaluación real — el sistema no mide la respuesta del visitante. El fallo es arbitrario, decidido por probabilidad configurable desde `progressConfig.js`. Ocurre a nivel de flujo (entre captchas) y no ofrece segundo intento: el sistema informa, castiga y sigue.
 _Evitar_: error, rechazo, validación
 
 ---

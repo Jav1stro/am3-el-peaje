@@ -1,6 +1,6 @@
 # ADR 0003 — Rechazo teatral como excepción al principio de "siempre acepta"
 
-**Estado:** Aceptado  
+**Estado:** Superseded por [ADR 0004](0004-fallo-parametrizado.md)  
 **Fecha:** 2026-06-23
 
 ---
