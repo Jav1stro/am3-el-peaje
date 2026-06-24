@@ -18,9 +18,11 @@ export function usePresence() {
     channelRef.current = channel
 
     channel
-      .on('presence', { event: 'join' }, ({ newPresences }) => {
-        const isOther = newPresences.some((p) => p.visitorId !== visitorId)
-        if (isOther) {
+      .on('presence', { event: 'join' }, ({ currentPresences, newPresences }) => {
+        const isNewVisitor =
+          currentPresences.length === 0 &&
+          newPresences.some((p) => p.visitorId !== visitorId)
+        if (isNewVisitor) {
           applyJoinPenalty()
         }
       })
